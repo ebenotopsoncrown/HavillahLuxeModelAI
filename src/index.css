@@ -1,14 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --luxe-black: #0D0D0D;
-  --luxe-gold: #C6A052;
-  --luxe-gold-light: #D4B872;
-  --luxe-brown: #3B2A1A;
-  --luxe-ivory: #F8F5F0;
-  --luxe-dark-card: #1A1A1A;
-  --luxe-dark-border: #2A2A2A;
+  --luxe-black: #080808;
+  --luxe-deep: #0F0F0F;
+  --luxe-card: #141414;
+  --luxe-surface: #1C1C1C;
+  --luxe-border: #242424;
+  --luxe-border-light: #2E2E2E;
+  --luxe-gold: #B8960C;
+  --luxe-gold-mid: #C9A82C;
+  --luxe-gold-light: #DEC05A;
+  --luxe-gold-pale: #F0D98A;
+  --luxe-ivory: #F5F0E8;
+  --luxe-muted: #666666;
+  --luxe-subtle: #444444;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,17 +24,48 @@ html, body, #root {
 }
 
 body {
-  background-color: #0D0D0D;
-  color: #F8F5F0;
-  font-family: 'Montserrat', sans-serif;
+  background-color: #080808;
+  color: #F5F0E8;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #1A1A1A; }
-::-webkit-scrollbar-thumb { background: #C6A052; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #D4B872; }
+a { text-decoration: none; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0F0F0F; }
+::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #B8960C; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-fade-in {
+  animation: fadeIn 220ms ease forwards;
+}
+
+@keyframes goldPulse {
+  0%, 100% { opacity: 1; border-color: rgba(184,150,12,0.8); }
+  50% { opacity: 0.6; border-color: rgba(184,150,12,0.3); }
+}
+
+.badge-generating {
+  animation: goldPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin { animation: spin 1s linear infinite; }

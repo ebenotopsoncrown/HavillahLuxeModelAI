@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, PlusCircle, Layers, Clock, CreditCard,
-  Crown, Menu, X, LogOut, Sparkles,
+  Crown, Menu, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'sonner'
@@ -19,18 +19,16 @@ function CreditDisplay({ profile }) {
   const credits = profile?.credits ?? 0
   const pct = Math.min(100, (credits / 100) * 100)
   return (
-    <div className="rounded-xl border border-[#2A2A2A] bg-[#0D0D0D] p-3">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-xs text-[#F8F5F0]/50 font-medium uppercase tracking-wider">Credits</span>
-        <span className="text-sm font-bold text-[#C6A052]">{credits}</span>
+    <div style={{ padding: '20px 20px 12px' }}>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#444444', marginBottom: '10px' }}>
+        Generation Credits
+      </p>
+      <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '28px', fontWeight: 300, color: '#B8960C', lineHeight: 1, marginBottom: '12px' }}>
+        {credits}
+      </p>
+      <div style={{ height: '2px', width: '100%', background: '#1A1A1A', borderRadius: '1px', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.5s ease' }} />
       </div>
-      <div className="h-1.5 w-full rounded-full bg-[#2A2A2A] overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-[#C6A052] to-[#D4B872] transition-all"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <p className="text-[10px] text-[#F8F5F0]/30 mt-1.5">remaining</p>
     </div>
   )
 }
@@ -48,104 +46,149 @@ export default function Layout({ children }) {
   }
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Logo */}
-      <div className="px-4 pt-6 pb-8">
-        <Link to="/dashboard" className="flex items-center gap-3 group" onClick={() => setMobileOpen(false)}>
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#C6A052] to-[#3B2A1A] flex items-center justify-center shadow-lg group-hover:shadow-[#C6A052]/30 transition-shadow">
-            <Crown size={18} className="text-[#0D0D0D]" />
-          </div>
+      <div style={{ height: '80px', display: 'flex', alignItems: 'center', padding: '0 24px', borderBottom: '1px solid #1A1A1A', flexShrink: 0 }}>
+        <Link
+          to="/dashboard"
+          onClick={() => setMobileOpen(false)}
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}
+        >
+          <Crown size={26} style={{ color: '#B8960C', flexShrink: 0 }} />
           <div>
-            <h1 className="text-lg font-bold text-[#C6A052] leading-none" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Havillah
-            </h1>
-            <p className="text-[9px] text-[#F8F5F0]/40 uppercase tracking-[0.2em] mt-0.5">LuxeModel AI</p>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', fontWeight: 300, color: '#B8960C', letterSpacing: '0.2em', lineHeight: 1 }}>
+              HAVILLAH
+            </div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 400, color: '#444', letterSpacing: '0.3em', textTransform: 'uppercase', marginTop: '4px' }}>
+              LUXEMODEL AI
+            </div>
           </div>
         </Link>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1">
+      <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => {
           const active = location.pathname === to
           return (
-            <Link
+            <NavItem
               key={to}
               to={to}
+              icon={Icon}
+              label={label}
+              active={active}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium group ${
-                active
-                  ? 'bg-[#C6A052]/15 border border-[#C6A052]/30 text-[#C6A052]'
-                  : 'text-[#F8F5F0]/50 hover:text-[#F8F5F0] hover:bg-[#2A2A2A]/60'
-              }`}
-            >
-              <Icon size={16} className={active ? 'text-[#C6A052]' : 'text-[#F8F5F0]/40 group-hover:text-[#F8F5F0]/70'} />
-              {label}
-              {label === 'New Project' && (
-                <Sparkles size={12} className="ml-auto text-[#C6A052]/60" />
-              )}
-            </Link>
+            />
           )
         })}
       </nav>
 
       {/* Footer */}
-      <div className="p-3 space-y-3 border-t border-[#2A2A2A] mt-4">
+      <div style={{ borderTop: '1px solid #1A1A1A', flexShrink: 0 }}>
         <CreditDisplay profile={profile} />
-        {profile && (
-          <div className="flex items-center gap-2 px-2 py-1">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C6A052] to-[#3B2A1A] flex items-center justify-center text-xs font-bold text-[#0D0D0D]">
-              {(profile.full_name || profile.email || 'U').charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-[#F8F5F0] truncate">{profile.full_name || 'User'}</p>
-              <p className="text-[10px] text-[#F8F5F0]/40 truncate">{profile.role || 'user'}</p>
-            </div>
-          </div>
-        )}
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[#F8F5F0]/50 hover:text-red-400 hover:bg-red-900/20 transition-all"
-        >
-          <LogOut size={15} />
-          Sign Out
-        </button>
+        <div style={{ padding: '0 16px 20px' }}>
+          <button
+            onClick={handleSignOut}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#444', borderRadius: '4px', transition: 'color 0.2s ease' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#999'}
+            onMouseLeave={e => e.currentTarget.style.color = '#444'}
+          >
+            <LogOut size={13} />
+            Sign Out
+          </button>
+        </div>
       </div>
     </div>
   )
 
   return (
-    <div className="flex h-screen bg-[#0D0D0D] overflow-hidden">
+    <div style={{ display: 'flex', height: '100vh', background: '#080808', overflow: 'hidden' }}>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 bg-[#111111] border-r border-[#2A2A2A] shrink-0">
+      <aside
+        className="hidden lg:flex flex-col shrink-0"
+        style={{ width: '240px', background: '#080808', borderRight: '1px solid #1A1A1A' }}
+      >
         <SidebarContent />
       </aside>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#111111] border-r border-[#2A2A2A] z-10">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50 }} className="lg:hidden">
+          <div
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '240px', background: '#080808', borderRight: '1px solid #1A1A1A', zIndex: 10, display: 'flex', flexDirection: 'column' }}>
             <SidebarContent />
           </aside>
         </div>
       )}
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile header */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-[#2A2A2A] bg-[#111111]">
-          <button onClick={() => setMobileOpen(true)} className="text-[#F8F5F0]/60 hover:text-[#F8F5F0]">
+      {/* Main Area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Mobile Header */}
+        <header
+          className="flex lg:hidden items-center justify-between"
+          style={{ height: '56px', padding: '0 16px', borderBottom: '1px solid #1A1A1A', background: '#080808', flexShrink: 0 }}
+        >
+          <button
+            onClick={() => setMobileOpen(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B8960C', padding: '4px', display: 'flex' }}
+          >
             <Menu size={20} />
           </button>
-          <span className="text-[#C6A052] font-bold text-sm" style={{ fontFamily: 'Playfair Display, serif' }}>Havillah</span>
-          <div className="w-8" />
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 300, color: '#B8960C', letterSpacing: '0.2em' }}>
+            HAVILLAH
+          </span>
+          <div style={{ width: '28px' }} />
         </header>
 
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        <main
+          key={location.pathname}
+          className="page-fade-in"
+          style={{ flex: 1, overflow: 'auto', background: '#0A0A0A' }}
+        >
           {children}
         </main>
       </div>
     </div>
+  )
+}
+
+function NavItem({ to, icon: Icon, active, label, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  const isHighlighted = active || hovered
+
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        height: '44px',
+        padding: '0 16px',
+        borderRadius: '6px',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '12px',
+        fontWeight: 500,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        textDecoration: 'none',
+        transition: 'all 0.2s ease',
+        color: active ? '#B8960C' : hovered ? '#999' : '#555',
+        background: active ? 'rgba(184,150,12,0.08)' : hovered ? 'rgba(255,255,255,0.03)' : 'transparent',
+        borderLeft: active ? '2px solid #B8960C' : '2px solid transparent',
+      }}
+    >
+      <Icon
+        size={16}
+        style={{ color: active ? '#B8960C' : hovered ? '#666' : '#444', flexShrink: 0 }}
+      />
+      {label}
+    </Link>
   )
 }

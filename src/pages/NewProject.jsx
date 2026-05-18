@@ -6,16 +6,8 @@ import { generateImage } from '../lib/fal'
 import { buildPrompt } from '../utils/promptBuilder'
 import ClothingUploader from '../components/ClothingUploader'
 import ModelConfigPanel from '../components/ModelConfigPanel'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { Progress } from '../components/ui/progress'
-import {
-  Sparkles, Camera, Mountain, LayoutTemplate,
-  RotateCw, ChevronRight,
-} from 'lucide-react'
+import { Sparkles, Camera, Mountain, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '../lib/utils'
 
 const POSES = [
   { key: 'standing_power', label: 'Power Stand', icon: '💪' },
@@ -60,6 +52,7 @@ export default function NewProject() {
   const [generating, setGenerating] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressMsg, setProgressMsg] = useState('')
+  const [nameFocused, setNameFocused] = useState(false)
 
   async function handleGenerate() {
     if (!projectName.trim()) { toast.error('Please enter a project name'); return }
@@ -74,12 +67,10 @@ export default function NewProject() {
     setProgressMsg('Uploading garment images...')
 
     try {
-      // Upload files
       const uploadedUrls = await Promise.all(files.map(f => uploadFile(f)))
       setProgress(20)
       setProgressMsg('Creating project...')
 
-      // Create project
       const { data: project, error: projErr } = await supabase.from('projects').insert({
         user_id: user.id,
         name: projectName.trim(),
@@ -94,11 +85,9 @@ export default function NewProject() {
       if (projErr) throw projErr
       setProgress(35)
 
-      // Build prompt
       const { prompt, negative_prompt } = buildPrompt({ ...config, pose, background })
       setProgressMsg(`Building ${imageCount} AI model images...`)
 
-      // Generate images
       const generatedUrls = []
       for (let i = 0; i < imageCount; i++) {
         setProgressMsg(`Generating image ${i + 1} of ${imageCount}...`)
@@ -110,7 +99,6 @@ export default function NewProject() {
       setProgress(88)
       setProgressMsg('Saving images...')
 
-      // Save generated images
       if (generatedUrls.length > 0) {
         await supabase.from('generated_images').insert(
           generatedUrls.map(({ url, prompt: p }) => ({
@@ -127,13 +115,11 @@ export default function NewProject() {
         )
       }
 
-      // Update project status
       await supabase.from('projects').update({
         status: 'completed',
         generation_count: generatedUrls.length,
       }).eq('id', project.id)
 
-      // Deduct credits & update totals
       await supabase.from('users').update({
         credits: Math.max(0, (profile?.credits || 0) - imageCount),
         total_generations: (profile?.total_generations || 0) + generatedUrls.length,
@@ -152,138 +138,275 @@ export default function NewProject() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-[#F8F5F0]">New Project</h1>
-        <p className="text-sm text-[#F8F5F0]/40 mt-1">Upload a garment and configure your AI model</p>
+    <div style={{ minHeight: '100%' }}>
+      {/* Page Header */}
+      <div style={{ padding: '48px 48px 0' }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '10px' }}>
+          New Project
+        </div>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', marginBottom: '20px' }}>
+          Create Your Collection
+        </h1>
+        <div style={{ width: '40px', height: '1px', background: '#B8960C' }} />
       </div>
 
+      {/* Generating Banner */}
       {generating && (
-        <div className="rounded-2xl border border-[#C6A052]/30 bg-[#C6A052]/5 p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-[#C6A052] animate-pulse" />
-            <span className="text-sm font-medium text-[#C6A052]">{progressMsg}</span>
+        <div style={{ margin: '32px 48px 0', background: '#141414', border: '1px solid rgba(184,150,12,0.25)', borderRadius: '4px', padding: '20px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+            <Sparkles size={13} style={{ color: '#B8960C' }} className="animate-pulse" />
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '12px', fontWeight: 500, color: '#B8960C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              {progressMsg}
+            </span>
           </div>
-          <Progress value={progress} />
-          <p className="text-xs text-[#F8F5F0]/40">{Math.round(progress)}% complete</p>
+          <div style={{ height: '2px', background: '#1A1A1A', borderRadius: '1px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.3s ease' }} />
+          </div>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#444', marginTop: '8px' }}>
+            {Math.round(progress)}% complete
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Column 1 */}
-        <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5 space-y-4">
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[55%_45%]" style={{ padding: '40px 48px', gap: '48px' }}>
+
+        {/* LEFT COLUMN */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          {/* Project Name */}
           <div>
-            <Label>Project Name</Label>
-            <Input
+            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#555', marginBottom: '8px' }}>
+              Project Name
+            </label>
+            <input
+              type="text"
               value={projectName}
               onChange={e => setProjectName(e.target.value)}
-              placeholder="e.g. Summer Ankara Collection..."
+              onFocus={() => setNameFocused(true)}
+              onBlur={() => setNameFocused(false)}
               disabled={generating}
+              placeholder="e.g. Summer Ankara Collection..."
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: `1px solid ${nameFocused ? '#B8960C' : '#2A2A2A'}`,
+                borderRadius: 0,
+                outline: 'none',
+                padding: '14px 0',
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: '20px',
+                fontWeight: 300,
+                color: '#F5F0E8',
+                transition: 'border-color 0.2s ease',
+                caretColor: '#B8960C',
+              }}
             />
           </div>
+
+          {/* Upload Zone */}
           <div>
-            <Label>Garment Photos</Label>
+            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#555', marginBottom: '12px' }}>
+              Garment Photos
+            </label>
             <ClothingUploader value={files} onChange={setFiles} maxFiles={4} />
           </div>
-        </div>
 
-        {/* Column 2 */}
-        <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5 overflow-y-auto max-h-[70vh]">
-          <ModelConfigPanel config={config} onChange={setConfig} />
-        </div>
-
-        {/* Column 3 */}
-        <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5 space-y-5">
-          {/* Pose selector */}
+          {/* Model Config */}
           <div>
-            <Label className="flex items-center gap-1.5 mb-2"><Camera size={12} /> Pose</Label>
-            <div className="grid grid-cols-5 gap-1.5">
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              Model Identity &amp; Appearance
+              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+            </div>
+            <ModelConfigPanel config={config} onChange={setConfig} />
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN (sticky) */}
+        <div className="lg:sticky lg:top-8 self-start" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+
+          {/* Scene — Pose */}
+          <div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Camera size={11} />
+              Pose
+              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
               {POSES.map(p => (
-                <button
+                <SceneOption
                   key={p.key}
-                  onClick={() => setPose(p.key)}
+                  icon={p.icon}
+                  label={p.label}
+                  selected={pose === p.key}
+                  onClick={() => !generating && setPose(p.key)}
                   disabled={generating}
-                  className={cn(
-                    'rounded-xl p-2 text-center border transition-all duration-150 text-xs',
-                    pose === p.key
-                      ? 'bg-[#C6A052]/15 border-[#C6A052]/50 text-[#C6A052]'
-                      : 'border-[#2A2A2A] bg-[#0D0D0D] text-[#F8F5F0]/50 hover:border-[#C6A052]/30'
-                  )}
-                >
-                  <div className="text-lg mb-0.5">{p.icon}</div>
-                  <div className="text-[9px] leading-tight">{p.label}</div>
-                </button>
+                />
               ))}
             </div>
           </div>
 
-          {/* Background selector */}
+          {/* Scene — Background */}
           <div>
-            <Label className="flex items-center gap-1.5 mb-2"><Mountain size={12} /> Background</Label>
-            <div className="grid grid-cols-5 gap-1.5">
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Mountain size={11} />
+              Background
+              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
               {BACKGROUNDS.map(b => (
-                <button
+                <SceneOption
                   key={b.key}
-                  onClick={() => setBackground(b.key)}
+                  icon={b.icon}
+                  label={b.label}
+                  selected={background === b.key}
+                  onClick={() => !generating && setBackground(b.key)}
                   disabled={generating}
-                  className={cn(
-                    'rounded-xl p-2 text-center border transition-all duration-150 text-xs',
-                    background === b.key
-                      ? 'bg-[#C6A052]/15 border-[#C6A052]/50 text-[#C6A052]'
-                      : 'border-[#2A2A2A] bg-[#0D0D0D] text-[#F8F5F0]/50 hover:border-[#C6A052]/30'
-                  )}
-                >
-                  <div className="text-lg mb-0.5">{b.icon}</div>
-                  <div className="text-[9px] leading-tight">{b.label}</div>
-                </button>
+                />
               ))}
             </div>
           </div>
 
-          {/* Image count */}
+          {/* Custom Instructions */}
           <div>
-            <Label className="flex items-center gap-1.5 mb-2"><LayoutTemplate size={12} /> Images to Generate</Label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4].map(n => (
-                <button
-                  key={n}
-                  onClick={() => setImageCount(n)}
-                  disabled={generating}
-                  className={cn(
-                    'flex-1 rounded-xl py-2 text-sm font-semibold border transition-all',
-                    imageCount === n
-                      ? 'bg-[#C6A052]/15 border-[#C6A052]/50 text-[#C6A052]'
-                      : 'border-[#2A2A2A] bg-[#0D0D0D] text-[#F8F5F0]/50 hover:border-[#C6A052]/30'
-                  )}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-[#F8F5F0]/30 mt-1.5">{imageCount} credit{imageCount !== 1 ? 's' : ''} · {profile?.credits || 0} available</p>
+            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#555', marginBottom: '12px' }}>
+              Custom Instructions
+            </label>
+            <textarea
+              value={config.custom_instructions}
+              onChange={e => setConfig(prev => ({ ...prev, custom_instructions: e.target.value }))}
+              disabled={generating}
+              placeholder="Any additional styling or scene details..."
+              rows={3}
+              style={{ width: '100%', background: '#0F0F0F', border: '1px solid #1E1E1E', borderRadius: '4px', padding: '12px 14px', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#F5F0E8', resize: 'none', outline: 'none', transition: 'border-color 0.2s ease', lineHeight: 1.6 }}
+              onFocus={e => e.target.style.borderColor = '#B8960C'}
+              onBlur={e => e.target.style.borderColor = '#1E1E1E'}
+            />
           </div>
 
-          {/* Generate */}
-          <div className="pt-2">
-            <Button
-              onClick={handleGenerate}
-              disabled={generating || files.length === 0 || !projectName.trim()}
-              className="w-full h-12 text-base"
-            >
-              {generating ? (
-                <><RotateCw size={16} className="animate-spin" /> Generating...</>
-              ) : (
-                <><Sparkles size={16} /> Generate {imageCount} Image{imageCount !== 1 ? 's' : ''}</>
-              )}
-            </Button>
-            {!generating && (
-              <p className="text-[10px] text-[#F8F5F0]/20 text-center mt-2">
-                Costs {imageCount} credit{imageCount !== 1 ? 's' : ''}
-              </p>
-            )}
+          {/* Generation Panel */}
+          <div style={{ background: '#141414', border: '1px solid #1E1E1E', borderTop: '1px solid #B8960C', borderRadius: '4px', padding: '24px' }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#555', marginBottom: '16px' }}>
+              Images to Generate
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              {[1, 2, 3, 4].map(n => (
+                <CountButton
+                  key={n}
+                  value={n}
+                  selected={imageCount === n}
+                  onClick={() => !generating && setImageCount(n)}
+                  disabled={generating}
+                />
+              ))}
+            </div>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#444', marginBottom: '20px' }}>
+              Costs {imageCount} credit{imageCount !== 1 ? 's' : ''} · {profile?.credits || 0} available
+            </div>
+            <GenerateButton onClick={handleGenerate} generating={generating} imageCount={imageCount} disabled={generating || files.length === 0 || !projectName.trim()} />
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+function SceneOption({ icon, label, selected, onClick, disabled }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: selected ? 'rgba(184,150,12,0.08)' : hovered ? '#141414' : '#0F0F0F',
+        border: selected ? '1px solid #B8960C' : `1px solid ${hovered ? '#2A2A2A' : '#1E1E1E'}`,
+        borderRadius: '4px',
+        padding: '10px 4px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        textAlign: 'center',
+        transition: 'all 0.15s ease',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <div style={{ fontSize: '18px', marginBottom: '6px' }}>{icon}</div>
+      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: selected ? '#B8960C' : '#555', lineHeight: 1.2 }}>
+        {label}
+      </div>
+    </button>
+  )
+}
+
+function CountButton({ value, selected, onClick, disabled }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flex: 1,
+        height: '40px',
+        background: selected ? 'rgba(184,150,12,0.1)' : 'transparent',
+        border: selected ? '1px solid #B8960C' : `1px solid ${hovered ? '#2A2A2A' : '#1E1E1E'}`,
+        borderRadius: '2px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontFamily: "'DM Mono', monospace",
+        fontSize: '14px',
+        fontWeight: 400,
+        color: selected ? '#B8960C' : hovered ? '#999' : '#555',
+        transition: 'all 0.15s ease',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      {value}
+    </button>
+  )
+}
+
+function GenerateButton({ onClick, generating, imageCount, disabled }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => !disabled && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%',
+        height: '52px',
+        background: disabled ? 'rgba(184,150,12,0.25)' : hovered ? 'linear-gradient(135deg, #C9A82C, #F0D98A)' : 'linear-gradient(135deg, #B8960C, #DEC05A)',
+        border: 'none',
+        borderRadius: '2px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.15em',
+        color: disabled ? 'rgba(8,8,8,0.5)' : '#080808',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+        transition: 'all 0.2s ease',
+        boxShadow: hovered && !disabled ? '0 0 24px rgba(184,150,12,0.3)' : 'none',
+        opacity: disabled && !generating ? 0.35 : 1,
+      }}
+    >
+      {generating ? (
+        <>
+          <RotateCw size={14} className="animate-spin" />
+          Generating...
+        </>
+      ) : (
+        <>
+          <Sparkles size={14} />
+          Generate {imageCount} Image{imageCount !== 1 ? 's' : ''}
+        </>
+      )}
+    </button>
   )
 }

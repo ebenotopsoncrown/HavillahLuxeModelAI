@@ -2,22 +2,33 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { Button } from '../components/ui/button'
-import { Badge } from '../components/ui/badge'
-import {
-  Folder, Image, Star, Sparkles, PlusCircle, Trash2,
-  TrendingUp, Clock, CheckCircle2
-} from 'lucide-react'
+import { Folder, Image, Star, Crown, PlusCircle, CheckCircle2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
-function StatCard({ icon: Icon, label, value, color = 'gold' }) {
+function StatCard({ icon: Icon, label, value }) {
+  const [hovered, setHovered] = useState(false)
   return (
-    <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-4">
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${color === 'gold' ? 'bg-[#C6A052]/15' : 'bg-[#2A2A2A]'}`}>
-        <Icon size={18} className={color === 'gold' ? 'text-[#C6A052]' : 'text-[#F8F5F0]/60'} />
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: '#141414',
+        border: '1px solid #1E1E1E',
+        borderTop: '1px solid #B8960C',
+        borderRadius: '4px',
+        padding: '28px 24px',
+        transition: 'all 0.2s ease',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
+      }}
+    >
+      <Icon size={20} style={{ color: '#2A2A2A', marginBottom: '20px', display: 'block' }} />
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', lineHeight: 1, marginBottom: '10px' }}>
+        {value}
       </div>
-      <p className="text-2xl font-bold text-[#F8F5F0]">{value}</p>
-      <p className="text-xs text-[#F8F5F0]/40 mt-0.5">{label}</p>
+      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#444' }}>
+        {label}
+      </div>
     </div>
   )
 }
@@ -25,58 +36,68 @@ function StatCard({ icon: Icon, label, value, color = 'gold' }) {
 function ProjectCard({ project, onDelete }) {
   const thumbnail = project.clothing_image_urls?.[0]
   const navigate = useNavigate()
+  const [hovered, setHovered] = useState(false)
+
+  const statusStyle = project.status === 'completed'
+    ? { border: '1px solid #B8960C', color: '#B8960C' }
+    : project.status === 'generating'
+    ? { border: '1px solid #B8960C', color: '#B8960C', opacity: 0.5 }
+    : { border: '1px solid #2A2A2A', color: '#555' }
 
   return (
-    <div className="group rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] overflow-hidden hover:border-[#C6A052]/30 transition-all duration-200 hover:shadow-lg hover:shadow-[#C6A052]/10">
-      {/* Thumbnail */}
-      <div
-        className="aspect-[4/3] bg-[#0D0D0D] overflow-hidden cursor-pointer"
-        onClick={() => navigate(`/project?id=${project.id}`)}
-      >
-        {thumbnail ? (
-          <img src={thumbnail} alt={project.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Image size={28} className="text-[#2A2A2A]" />
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-[#F8F5F0] truncate">{project.name}</h3>
-            <p className="text-xs text-[#F8F5F0]/40 mt-0.5">
-              {project.generation_count || 0} images · {new Date(project.created_at).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <Badge variant={project.status === 'completed' ? 'success' : project.status === 'generating' ? 'warning' : 'default'}>
-              {project.status || 'draft'}
-            </Badge>
-          </div>
+    <div
+      style={{ borderRadius: '4px', overflow: 'hidden', background: '#141414', position: 'relative', cursor: 'pointer', aspectRatio: '3 / 4' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/project?id=${project.id}`)}
+    >
+      {thumbnail ? (
+        <img
+          src={thumbnail}
+          alt={project.name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hovered ? 'scale(1.03)' : 'scale(1)', transition: 'transform 0.4s ease' }}
+        />
+      ) : (
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0F0F0F' }}>
+          <Image size={32} style={{ color: '#1E1E1E' }} />
         </div>
+      )}
 
-        <div className="flex gap-1.5 mt-3">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 text-xs"
-            onClick={() => navigate(`/project?id=${project.id}`)}
-          >
-            Open
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            className="w-8 px-0"
-            onClick={() => onDelete(project.id)}
-          >
-            <Trash2 size={13} />
-          </Button>
+      {/* Overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: hovered
+          ? 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 55%, transparent 100%)'
+          : 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
+        transition: 'background 0.3s ease',
+      }} />
+
+      {/* Bottom content */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px' }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 500, color: '#F5F0E8', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {project.name}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '2px 7px', borderRadius: '2px', ...statusStyle }}>
+            {project.status || 'draft'}
+          </span>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: '#555' }}>
+            {new Date(project.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+          </span>
         </div>
       </div>
+
+      {/* Delete */}
+      {hovered && (
+        <button
+          onClick={e => { e.stopPropagation(); onDelete(project.id) }}
+          style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', background: 'rgba(8,8,8,0.8)', border: '1px solid #2A2A2A', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', transition: 'color 0.2s ease' }}
+          onMouseEnter={e => e.currentTarget.style.color = '#CC4444'}
+          onMouseLeave={e => e.currentTarget.style.color = '#555'}
+        >
+          <X size={12} />
+        </button>
+      )}
     </div>
   )
 }
@@ -101,12 +122,7 @@ export default function Dashboard() {
       ])
       setProjects(projectsData || [])
       const completed = (projectsData || []).filter(p => p.status === 'completed').length
-      setStats({
-        total: (projectsData || []).length,
-        completed,
-        images: imgCount || 0,
-        favorites: favCount || 0,
-      })
+      setStats({ total: (projectsData || []).length, completed, images: imgCount || 0, favorites: favCount || 0 })
     } catch {
       toast.error('Failed to load dashboard')
     } finally {
@@ -123,60 +139,69 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between">
+    <div style={{ minHeight: '100%' }}>
+      {/* Hero Header */}
+      <div style={{ padding: '48px 48px 40px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }} className="flex-col sm:flex-row gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F8F5F0]">
-            Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '14px' }}>
+            Havillah Studio
+          </div>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '42px', fontWeight: 300, color: '#F5F0E8', lineHeight: 1.05, marginBottom: '10px' }}>
+            Your Creative Studio
           </h1>
-          <p className="text-sm text-[#F8F5F0]/40 mt-1">Your AI fashion model studio</p>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#555', lineHeight: 1.6 }}>
+            Generate world-class fashion model imagery
+          </p>
         </div>
-        <Link to="/new-project">
-          <Button>
-            <PlusCircle size={16} /> New Project
-          </Button>
+        <Link to="/new-project" style={{ flexShrink: 0 }}>
+          <GoldButton>
+            <PlusCircle size={14} />
+            New Project
+          </GoldButton>
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4" style={{ padding: '0 48px', gap: '16px' }}>
         <StatCard icon={Folder} label="Total Projects" value={stats.total} />
         <StatCard icon={CheckCircle2} label="Completed" value={stats.completed} />
         <StatCard icon={Image} label="Images Generated" value={stats.images} />
-        <StatCard icon={Star} label="Favorites" value={stats.favorites} color="star" />
+        <StatCard icon={Star} label="Favourites" value={stats.favorites} />
       </div>
 
-      {/* Projects */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-[#F8F5F0]">Recent Projects</h2>
-          <Link to="/history" className="text-sm text-[#C6A052] hover:text-[#D4B872] transition-colors">
-            View all →
-          </Link>
+      {/* Recent Work */}
+      <div style={{ padding: '48px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C' }}>
+            Recent Work
+          </div>
+          <ViewAllLink to="/history" />
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4" style={{ gap: '20px' }}>
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] aspect-[4/3] animate-pulse" />
+              <div key={i} style={{ aspectRatio: '3/4', background: '#141414', borderRadius: '4px' }} className="animate-pulse" />
             ))}
           </div>
         ) : projects.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#2A2A2A] p-12 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[#C6A052]/10 flex items-center justify-center mx-auto mb-4">
-              <Sparkles size={24} className="text-[#C6A052]" />
-            </div>
-            <h3 className="text-lg font-semibold text-[#F8F5F0] mb-2">No projects yet</h3>
-            <p className="text-sm text-[#F8F5F0]/40 mb-5">Upload a garment and generate your first AI model photo</p>
+          <div style={{ textAlign: 'center', padding: '80px 48px', border: '1px dashed #1E1E1E', borderRadius: '4px' }}>
+            <Crown size={64} style={{ color: '#1E1E1E', margin: '0 auto 28px', display: 'block' }} />
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', fontWeight: 300, color: '#F5F0E8', marginBottom: '12px' }}>
+              Begin Your Collection
+            </h2>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#555', marginBottom: '32px', lineHeight: 1.7 }}>
+              Upload a garment and generate your first AI model image
+            </p>
             <Link to="/new-project">
-              <Button>
-                <PlusCircle size={15} /> Create First Project
-              </Button>
+              <GoldButton>
+                <PlusCircle size={14} />
+                Create First Project
+              </GoldButton>
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4" style={{ gap: '20px' }}>
             {projects.map(p => (
               <ProjectCard key={p.id} project={p} onDelete={deleteProject} />
             ))}
@@ -184,5 +209,53 @@ export default function Dashboard() {
         )}
       </div>
     </div>
+  )
+}
+
+function GoldButton({ children, onClick, disabled }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: disabled ? 'rgba(184,150,12,0.3)' : hovered ? 'linear-gradient(135deg, #C9A82C, #F0D98A)' : 'linear-gradient(135deg, #B8960C, #DEC05A)',
+        border: 'none',
+        borderRadius: '2px',
+        height: '44px',
+        padding: '0 24px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        color: '#080808',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        opacity: disabled ? 0.4 : 1,
+        transition: 'all 0.2s ease',
+        boxShadow: hovered && !disabled ? '0 0 20px rgba(184,150,12,0.25)' : 'none',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function ViewAllLink({ to }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <Link
+      to={to}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: hovered ? '#B8960C' : '#444', transition: 'color 0.2s ease', textDecoration: 'none' }}
+    >
+      View All →
+    </Link>
   )
 }

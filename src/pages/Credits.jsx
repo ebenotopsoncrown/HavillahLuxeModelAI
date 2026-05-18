@@ -1,8 +1,7 @@
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { Button } from '../components/ui/button'
-import { Badge } from '../components/ui/badge'
-import { CreditCard, Zap, Crown, Building2, Check, Plus } from 'lucide-react'
+import { Zap, Crown, Building2, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 const PLANS = [
@@ -13,6 +12,7 @@ const PLANS = [
     icon: Zap,
     features: ['10 credits included', 'Basic model generation', 'Standard quality', 'Community support'],
     badge: null,
+    featured: false,
   },
   {
     name: 'Premium',
@@ -21,6 +21,7 @@ const PLANS = [
     icon: Crown,
     features: ['100 credits', 'Priority generation', '8K quality output', 'Flyer Studio access', 'Listing generator', 'Email support'],
     badge: 'Most Popular',
+    featured: true,
   },
   {
     name: 'Enterprise',
@@ -29,6 +30,7 @@ const PLANS = [
     icon: Building2,
     features: ['500 credits', 'Bulk generation', 'API access', 'Custom model styles', 'White-label exports', 'Dedicated support'],
     badge: 'Best Value',
+    featured: false,
   },
 ]
 
@@ -51,124 +53,271 @@ export default function Credits() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#F8F5F0]">Credits</h1>
-        <p className="text-sm text-[#F8F5F0]/40 mt-1">Manage your generation credits</p>
+    <div style={{ minHeight: '100%' }}>
+      {/* Page Header */}
+      <div style={{ padding: '48px 48px 0' }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '10px' }}>
+          Account
+        </div>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', marginBottom: '20px' }}>
+          Credits &amp; Plans
+        </h1>
+        <div style={{ width: '40px', height: '1px', background: '#B8960C' }} />
       </div>
 
-      {/* Current Balance */}
-      <div className="rounded-2xl border border-[#C6A052]/30 bg-gradient-to-br from-[#C6A052]/10 to-[#3B2A1A]/20 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#C6A052]/20 flex items-center justify-center">
-              <CreditCard size={22} className="text-[#C6A052]" />
-            </div>
-            <div>
-              <p className="text-sm text-[#F8F5F0]/60">Current Balance</p>
-              <p className="text-3xl font-bold text-[#C6A052]">{credits}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <Badge variant="gold">{profile?.role || 'user'} plan</Badge>
-            <p className="text-xs text-[#F8F5F0]/40 mt-1">{profile?.total_generations || 0} total generations</p>
-          </div>
-        </div>
+      <div style={{ padding: '40px 48px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-[#F8F5F0]/50">
-            <span>Credits used</span>
-            <span>{credits} remaining</span>
-          </div>
-          <div className="h-2.5 w-full rounded-full bg-[#0D0D0D]/50 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#C6A052] to-[#D4B872] transition-all duration-500"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <Button variant="outline" size="sm" onClick={addDemoCredits} className="border-[#C6A052]/30 text-[#C6A052] hover:bg-[#C6A052]/10">
-            <Plus size={14} /> Add 10 Demo Credits
-          </Button>
-          <p className="text-[10px] text-[#F8F5F0]/30 mt-1.5">For testing purposes only</p>
-        </div>
-      </div>
-
-      {/* Plans */}
-      <div>
-        <h2 className="text-lg font-semibold text-[#F8F5F0] mb-4">Upgrade Your Plan</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PLANS.map(plan => {
-            const Icon = plan.icon
-            return (
-              <div
-                key={plan.name}
-                className={`rounded-2xl border p-5 relative ${
-                  plan.name === 'Premium'
-                    ? 'border-[#C6A052]/50 bg-gradient-to-b from-[#C6A052]/10 to-[#1A1A1A]'
-                    : 'border-[#2A2A2A] bg-[#1A1A1A]'
-                }`}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge variant="gold">{plan.badge}</Badge>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 mb-4">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${plan.name === 'Premium' ? 'bg-[#C6A052]/20' : 'bg-[#2A2A2A]'}`}>
-                    <Icon size={16} className={plan.name === 'Premium' ? 'text-[#C6A052]' : 'text-[#F8F5F0]/60'} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#F8F5F0]">{plan.name}</h3>
-                    <p className="text-xs text-[#F8F5F0]/40">{plan.credits} credits</p>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <span className="text-2xl font-bold text-[#F8F5F0]">{plan.price}</span>
-                  {plan.price !== 'Free' && <span className="text-sm text-[#F8F5F0]/40"> / month</span>}
-                </div>
-
-                <ul className="space-y-2 mb-5">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-[#F8F5F0]/70">
-                      <Check size={12} className="text-[#C6A052] shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  variant={plan.name === 'Premium' ? 'default' : 'outline'}
-                  className="w-full"
-                  onClick={() => toast.info('Payment integration coming soon!')}
-                >
-                  {plan.price === 'Free' ? 'Current Plan' : `Get ${plan.name}`}
-                </Button>
+        {/* Current Balance Card */}
+        <div style={{ background: '#141414', border: '1px solid #1E1E1E', borderTop: '1px solid #B8960C', borderRadius: '4px', padding: '32px 28px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
+            {/* Left */}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#444', marginBottom: '12px' }}>
+                Current Balance
               </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-4">
-        <h3 className="text-sm font-semibold text-[#F8F5F0] mb-2">How Credits Work</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { label: '1 credit', desc: '= 1 generated model image' },
-            { label: 'Never expire', desc: 'Credits roll over each month' },
-            { label: 'Instant top-up', desc: 'Credits added immediately' },
-          ].map(item => (
-            <div key={item.label} className="text-xs">
-              <p className="font-semibold text-[#C6A052]">{item.label}</p>
-              <p className="text-[#F8F5F0]/50 mt-0.5">{item.desc}</p>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '52px', fontWeight: 300, color: '#B8960C', lineHeight: 1, marginBottom: '20px' }}>
+                {credits}
+              </div>
+              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#444' }}>Credits remaining</span>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#555' }}>{credits} / 100</span>
+              </div>
+              <div style={{ height: '2px', background: '#1A1A1A', borderRadius: '1px', overflow: 'hidden', marginBottom: '24px' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.5s ease' }} />
+              </div>
             </div>
-          ))}
+            {/* Right */}
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ display: 'inline-block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '4px 12px', borderRadius: '2px', border: '1px solid #B8960C', color: '#B8960C', marginBottom: '12px' }}>
+                {profile?.role || 'starter'} plan
+              </div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '24px', fontWeight: 300, color: '#F5F0E8', lineHeight: 1, marginBottom: '4px' }}>
+                {profile?.total_generations || 0}
+              </div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#444' }}>
+                Total Generations
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Add Demo Credits */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <GhostButton onClick={addDemoCredits}>
+            <Plus size={13} />
+            Add 10 Demo Credits
+          </GhostButton>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#333', fontStyle: 'italic' }}>
+            For testing purposes only
+          </span>
+        </div>
+
+        {/* Pricing Section Header */}
+        <div>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '8px' }}>
+            Choose Your Plan
+          </div>
+          <div style={{ width: '32px', height: '1px', background: '#B8960C', marginBottom: '28px' }} />
+
+          {/* Plans Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '16px' }}>
+            {PLANS.map(plan => (
+              <PlanCard key={plan.name} plan={plan} />
+            ))}
+          </div>
+        </div>
+
+        {/* How Credits Work */}
+        <div style={{ background: '#141414', border: '1px solid #1E1E1E', borderRadius: '4px', padding: '28px' }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#444', marginBottom: '20px' }}>
+            How Credits Work
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '24px' }}>
+            {[
+              { label: '1 Credit', desc: 'equals one generated model image' },
+              { label: 'Never Expire', desc: 'Credits roll over each month' },
+              { label: 'Instant Top-Up', desc: 'Credits added immediately on purchase' },
+            ].map(item => (
+              <div key={item.label}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '13px', color: '#B8960C', marginBottom: '6px' }}>
+                  {item.label}
+                </div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#555', lineHeight: 1.6 }}>
+                  {item.desc}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+function PlanCard({ plan }) {
+  const [hovered, setHovered] = useState(false)
+  const Icon = plan.icon
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        background: '#141414',
+        border: plan.featured ? '1px solid #B8960C' : `1px solid ${hovered ? '#2A2A2A' : '#1E1E1E'}`,
+        borderTop: plan.featured ? '1px solid #B8960C' : hovered ? '1px solid #2A2A2A' : '1px solid #1E1E1E',
+        borderRadius: '4px',
+        padding: '36px 28px',
+        transition: 'all 0.2s ease',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+      }}
+    >
+      {/* Badge */}
+      {plan.badge && (
+        <div style={{ position: 'absolute', top: '-1px', left: '50%', transform: 'translateX(-50%)' }}>
+          <div style={{ background: '#B8960C', fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#080808', padding: '4px 12px', borderRadius: '0 0 4px 4px' }}>
+            {plan.badge}
+          </div>
+        </div>
+      )}
+
+      {/* Plan Name */}
+      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '24px', fontWeight: 300, color: '#F5F0E8', marginBottom: '16px', marginTop: plan.badge ? '16px' : '0' }}>
+        {plan.name}
+      </h2>
+
+      {/* Price */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '6px' }}>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '40px', fontWeight: 300, color: '#B8960C', lineHeight: 1 }}>
+          {plan.price}
+        </span>
+        {plan.price !== 'Free' && (
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#555' }}>/month</span>
+        )}
+      </div>
+
+      {/* Credits */}
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '13px', color: '#B8960C', marginBottom: '20px' }}>
+        {plan.credits} credits
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: '1px', background: '#1E1E1E', marginBottom: '20px' }} />
+
+      {/* Features */}
+      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+        {plan.features.map(f => (
+          <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <Check size={13} style={{ color: '#B8960C', flexShrink: 0, marginTop: '2px' }} />
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* CTA */}
+      {plan.featured ? (
+        <GoldButton onClick={() => toast.info('Payment integration coming soon!')}>
+          Get {plan.name}
+        </GoldButton>
+      ) : (
+        <OutlineButton onClick={() => plan.price === 'Free' ? null : toast.info('Payment integration coming soon!')}>
+          {plan.price === 'Free' ? 'Current Plan' : `Get ${plan.name}`}
+        </OutlineButton>
+      )}
+    </div>
+  )
+}
+
+function GoldButton({ children, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%',
+        height: '44px',
+        background: hovered ? 'linear-gradient(135deg, #C9A82C, #F0D98A)' : 'linear-gradient(135deg, #B8960C, #DEC05A)',
+        border: 'none',
+        borderRadius: '2px',
+        cursor: 'pointer',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        color: '#080808',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        transition: 'all 0.2s ease',
+        boxShadow: hovered ? '0 0 20px rgba(184,150,12,0.25)' : 'none',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function OutlineButton({ children, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%',
+        height: '44px',
+        background: 'transparent',
+        border: `1px solid ${hovered ? '#444' : '#2A2A2A'}`,
+        borderRadius: '2px',
+        cursor: 'pointer',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        color: hovered ? '#F5F0E8' : '#666',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function GhostButton({ children, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '11px',
+        fontWeight: 500,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        color: hovered ? '#999' : '#555',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        transition: 'color 0.2s ease',
+        padding: '8px 0',
+      }}
+    >
+      {children}
+    </button>
   )
 }

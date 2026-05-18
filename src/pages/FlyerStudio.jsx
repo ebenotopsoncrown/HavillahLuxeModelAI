@@ -4,8 +4,6 @@ import { supabase } from '../lib/supabase'
 import { invokeLLM } from '../lib/gemini'
 import FlyerConfigurator from '../components/FlyerConfigurator'
 import FlyerCanvas from '../components/FlyerCanvas'
-import { Button } from '../components/ui/button'
-import { Label } from '../components/ui/label'
 import { Sparkles, Image, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -102,77 +100,152 @@ Return JSON with:
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-[#F8F5F0]">Flyer Studio</h1>
-        <p className="text-sm text-[#F8F5F0]/40 mt-1">Create professional fashion marketing materials</p>
+    <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Page Header */}
+      <div style={{ padding: '48px 48px 0', flexShrink: 0 }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '10px' }}>
+          Creative Tools
+        </div>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', marginBottom: '20px' }}>
+          Flyer Studio
+        </h1>
+        <div style={{ width: '40px', height: '1px', background: '#B8960C' }} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left: Config */}
-        <div className="space-y-4">
-          {/* Model image select */}
-          <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-4">
-            <Label className="mb-3">Select Model Image</Label>
+      {/* Two-Panel Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2" style={{ flex: 1, padding: '40px 48px', gap: '0' }}>
+
+        {/* LEFT — Configuration */}
+        <div style={{ background: '#141414', borderRadius: '4px 0 0 4px', border: '1px solid #1E1E1E', padding: '32px', display: 'flex', flexDirection: 'column', gap: '28px', overflowY: 'auto' }} className="lg:rounded-r-none rounded-b-none lg:rounded-b-none">
+
+          {/* Model Image Selector */}
+          <div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              Select Model Image
+              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+            </div>
+
             {loadingImages ? (
-              <div className="flex justify-center py-4"><RotateCw size={18} className="animate-spin text-[#C6A052]" /></div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
+                <RotateCw size={18} style={{ color: '#B8960C' }} className="animate-spin" />
+              </div>
             ) : projectImages.length === 0 ? (
-              <div className="text-center py-6">
-                <Image size={24} className="text-[#2A2A2A] mx-auto mb-2" />
-                <p className="text-xs text-[#F8F5F0]/40">Generate model images first</p>
+              <div style={{ textAlign: 'center', padding: '32px 0', border: '1px dashed #1E1E1E', borderRadius: '4px' }}>
+                <Image size={24} style={{ color: '#222', margin: '0 auto 12px', display: 'block' }} />
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#444' }}>
+                  Generate model images first
+                </p>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2 max-h-52 overflow-y-auto">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
                 {projectImages.map(img => (
-                  <div
+                  <ModelImageThumb
                     key={img.id}
+                    img={img}
+                    selected={selectedModelImg?.id === img.id}
                     onClick={() => setSelectedModelImg(img)}
-                    className={`aspect-[4/3] rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
-                      selectedModelImg?.id === img.id
-                        ? 'border-[#C6A052] shadow-[0_0_12px_rgba(198,160,82,0.3)]'
-                        : 'border-[#2A2A2A] hover:border-[#C6A052]/40'
-                    }`}
-                  >
-                    <img src={img.image_url} alt="Model" className="w-full h-full object-cover" />
-                  </div>
+                  />
                 ))}
               </div>
             )}
           </div>
 
-          {/* Configurator */}
-          <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-4">
+          {/* Flyer Configurator */}
+          <div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              Campaign Details
+              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+            </div>
             <FlyerConfigurator config={flyerConfig} onChange={setFlyerConfig} />
           </div>
 
-          <Button onClick={generateFlyer} disabled={loading || !selectedModelImg} className="w-full h-11">
-            {loading ? (
-              <><RotateCw size={15} className="animate-spin" /> Generating Flyer...</>
-            ) : (
-              <><Sparkles size={15} /> Generate Flyer</>
-            )}
-          </Button>
+          {/* Generate Button */}
+          <GenerateFlyerButton onClick={generateFlyer} loading={loading} disabled={loading || !selectedModelImg} />
         </div>
 
-        {/* Right: Canvas */}
-        <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5">
-            {flyerData ? (
+        {/* RIGHT — Preview */}
+        <div style={{ background: '#0F0F0F', borderRadius: '0 4px 4px 0', border: '1px solid #1E1E1E', borderLeft: 'none', padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} className="lg:rounded-l-none rounded-t-none lg:rounded-t-none">
+          {flyerData ? (
+            <div style={{ width: '100%' }}>
               <FlyerCanvas flyerData={flyerData} onSave={saveFlyer} />
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[#C6A052]/10 flex items-center justify-center mb-4">
-                  <Sparkles size={28} className="text-[#C6A052]/50" />
-                </div>
-                <h3 className="text-lg font-semibold text-[#F8F5F0]/60 mb-2">Flyer Preview</h3>
-                <p className="text-sm text-[#F8F5F0]/30">
-                  Select a model image, configure your campaign,<br />then click Generate Flyer
-                </p>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '48px 32px' }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '4px', border: '1px solid #1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <Sparkles size={28} style={{ color: '#2A2A2A' }} />
               </div>
-            )}
-          </div>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '24px', fontWeight: 300, color: '#333', marginBottom: '10px' }}>
+                Flyer Preview
+              </h2>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#333', lineHeight: 1.7 }}>
+                Select a model image, configure your<br />campaign, then generate your flyer
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
+  )
+}
+
+function ModelImageThumb({ img, selected, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        aspectRatio: '1',
+        borderRadius: '2px',
+        overflow: 'hidden',
+        border: selected ? '2px solid #B8960C' : `2px solid ${hovered ? '#2A2A2A' : 'transparent'}`,
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        boxShadow: selected ? '0 0 12px rgba(184,150,12,0.25)' : 'none',
+      }}
+    >
+      <img src={img.image_url} alt="Model" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    </div>
+  )
+}
+
+function GenerateFlyerButton({ onClick, loading, disabled }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => !disabled && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%',
+        height: '48px',
+        background: disabled ? 'rgba(184,150,12,0.2)' : hovered ? 'linear-gradient(135deg, #C9A82C, #F0D98A)' : 'linear-gradient(135deg, #B8960C, #DEC05A)',
+        border: 'none',
+        borderRadius: '2px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.15em',
+        color: disabled ? 'rgba(8,8,8,0.4)' : '#080808',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+        transition: 'all 0.2s ease',
+        opacity: disabled ? 0.5 : 1,
+        boxShadow: hovered && !disabled ? '0 0 20px rgba(184,150,12,0.25)' : 'none',
+        flexShrink: 0,
+      }}
+    >
+      {loading ? (
+        <><RotateCw size={14} className="animate-spin" /> Generating Flyer...</>
+      ) : (
+        <><Sparkles size={14} /> Generate Flyer</>
+      )}
+    </button>
   )
 }
