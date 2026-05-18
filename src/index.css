@@ -1,19 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --luxe-black: #080808;
-  --luxe-deep: #0F0F0F;
-  --luxe-card: #141414;
-  --luxe-surface: #1C1C1C;
-  --luxe-border: #242424;
-  --luxe-border-light: #2E2E2E;
-  --luxe-gold: #B8960C;
-  --luxe-gold-mid: #C9A82C;
-  --luxe-gold-light: #DEC05A;
-  --luxe-gold-pale: #F0D98A;
-  --luxe-ivory: #F5F0E8;
-  --luxe-muted: #666666;
-  --luxe-subtle: #444444;
+  /* Backgrounds */
+  --luxe-bg:          #FAFAF8;
+  --luxe-bg-warm:     #F5F0E8;
+  --luxe-surface:     #FFFFFF;
+  --luxe-surface-2:   #F8F5F0;
+
+  /* Sidebar (keep dark) */
+  --luxe-sidebar:     #0D0D0D;
+  --luxe-sidebar-2:   #141414;
+  --luxe-sidebar-border: #1E1E1E;
+
+  /* Text */
+  --luxe-text:        #0D0D0D;
+  --luxe-text-2:      #3A3A3A;
+  --luxe-text-muted:  #6B6B6B;
+  --luxe-text-subtle: #AAAAAA;
+
+  /* Gold accents */
+  --luxe-gold:        #B8960C;
+  --luxe-gold-mid:    #C9A82C;
+  --luxe-gold-light:  #DEC05A;
+  --luxe-gold-pale:   #F0D98A;
+
+  /* Borders */
+  --luxe-border:      #E8E4DC;
+  --luxe-border-2:    #F0EDE6;
+
+  /* Cards */
+  --luxe-card:        #FFFFFF;
+  --luxe-card-hover:  #FDFCFA;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,8 +41,8 @@ html, body, #root {
 }
 
 body {
-  background-color: #080808;
-  color: #F5F0E8;
+  background-color: #FAFAF8;
+  color: #0D0D0D;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   line-height: 1.7;
@@ -41,8 +58,8 @@ h1, h2, h3, h4, h5, h6 {
 a { text-decoration: none; }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: #0F0F0F; }
-::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+::-webkit-scrollbar-track { background: #F0EDE6; }
+::-webkit-scrollbar-thumb { background: #D4C9B0; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #B8960C; }
 
 @keyframes fadeIn {

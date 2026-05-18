@@ -86,7 +86,7 @@ export default function Layout({ children }) {
       {/* Footer */}
       <div style={{ borderTop: '1px solid #1A1A1A', flexShrink: 0 }}>
         <CreditDisplay profile={profile} />
-        <div style={{ padding: '0 16px 20px' }}>
+        <div style={{ padding: '0 16px 16px' }}>
           <button
             onClick={handleSignOut}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#444', borderRadius: '4px', transition: 'color 0.2s ease' }}
@@ -97,16 +97,21 @@ export default function Layout({ children }) {
             Sign Out
           </button>
         </div>
+        <div style={{ padding: '0 20px 16px' }}>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#333', letterSpacing: '0.05em' }}>
+            &copy; 2026 Havillah LuxeModel AI
+          </p>
+        </div>
       </div>
     </div>
   )
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#080808', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', background: '#FAFAF8', overflow: 'hidden' }}>
       {/* Desktop Sidebar */}
       <aside
         className="hidden lg:flex flex-col shrink-0"
-        style={{ width: '240px', background: '#080808', borderRight: '1px solid #1A1A1A' }}
+        style={{ width: '240px', background: '#0D0D0D', borderRight: '1px solid #1E1E1E' }}
       >
         <SidebarContent />
       </aside>
@@ -115,10 +120,10 @@ export default function Layout({ children }) {
       {mobileOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50 }} className="lg:hidden">
           <div
-            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
             onClick={() => setMobileOpen(false)}
           />
-          <aside style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '240px', background: '#080808', borderRight: '1px solid #1A1A1A', zIndex: 10, display: 'flex', flexDirection: 'column' }}>
+          <aside style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '240px', background: '#0D0D0D', borderRight: '1px solid #1E1E1E', zIndex: 10, display: 'flex', flexDirection: 'column' }}>
             <SidebarContent />
           </aside>
         </div>
@@ -129,7 +134,7 @@ export default function Layout({ children }) {
         {/* Mobile Header */}
         <header
           className="flex lg:hidden items-center justify-between"
-          style={{ height: '56px', padding: '0 16px', borderBottom: '1px solid #1A1A1A', background: '#080808', flexShrink: 0 }}
+          style={{ height: '56px', padding: '0 16px', borderBottom: '1px solid #E8E4DC', background: '#FFFFFF', flexShrink: 0 }}
         >
           <button
             onClick={() => setMobileOpen(true)}
@@ -146,7 +151,15 @@ export default function Layout({ children }) {
         <main
           key={location.pathname}
           className="page-fade-in"
-          style={{ flex: 1, overflow: 'auto', background: '#0A0A0A' }}
+          style={{
+            flex: 1,
+            overflow: 'auto',
+            background: '#FAFAF8',
+            backgroundImage: `
+              radial-gradient(circle at 20% 50%, rgba(184,150,12,0.03) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(184,150,12,0.02) 0%, transparent 40%)
+            `,
+          }}
         >
           {children}
         </main>
@@ -179,14 +192,14 @@ function NavItem({ to, icon: Icon, active, label, onClick }) {
         letterSpacing: '0.12em',
         textDecoration: 'none',
         transition: 'all 0.2s ease',
-        color: active ? '#B8960C' : hovered ? '#999' : '#555',
-        background: active ? 'rgba(184,150,12,0.08)' : hovered ? 'rgba(255,255,255,0.03)' : 'transparent',
-        borderLeft: active ? '2px solid #B8960C' : '2px solid transparent',
+        color: active ? '#C9A82C' : hovered ? '#999' : '#888',
+        background: active ? 'rgba(184,150,12,0.1)' : hovered ? 'rgba(255,255,255,0.03)' : 'transparent',
+        borderLeft: active ? '2px solid #C9A82C' : '2px solid transparent',
       }}
     >
       <Icon
         size={16}
-        style={{ color: active ? '#B8960C' : hovered ? '#666' : '#444', flexShrink: 0 }}
+        style={{ color: active ? '#C9A82C' : hovered ? '#666' : '#555', flexShrink: 0 }}
       />
       {label}
     </Link>

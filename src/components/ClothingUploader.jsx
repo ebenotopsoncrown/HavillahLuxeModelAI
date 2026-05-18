@@ -35,23 +35,38 @@ export default function ClothingUploader({ value = [], onChange, maxFiles = 4 })
       {previews.length < maxFiles && (
         <div
           {...getRootProps()}
-          className={cn(
-            'border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200',
-            isDragActive
-              ? 'border-[#C6A052] bg-[#C6A052]/10'
-              : 'border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#C6A052]/50 hover:bg-[#C6A052]/5'
-          )}
+          style={{
+            background: isDragActive ? '#F0EBE0' : '#F8F5F0',
+            border: `1.5px dashed ${isDragActive ? '#B8960C' : '#D4C9B0'}`,
+            borderRadius: '8px',
+            padding: '32px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={e => {
+            if (!isDragActive) {
+              e.currentTarget.style.background = '#F0EBE0'
+              e.currentTarget.style.borderColor = '#B8960C'
+            }
+          }}
+          onMouseLeave={e => {
+            if (!isDragActive) {
+              e.currentTarget.style.background = '#F8F5F0'
+              e.currentTarget.style.borderColor = '#D4C9B0'
+            }
+          }}
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#C6A052]/15 border border-[#C6A052]/30 flex items-center justify-center">
-              <Upload size={20} className="text-[#C6A052]" />
+            <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(184,150,12,0.08)', border: '1px solid rgba(184,150,12,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Upload size={20} style={{ color: '#B8960C' }} />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#F8F5F0]/80">
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 500, color: '#3A3A3A' }}>
                 {isDragActive ? 'Drop images here' : 'Drag & drop garment photos'}
               </p>
-              <p className="text-xs text-[#F8F5F0]/40 mt-1">
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#AAAAAA', marginTop: '4px' }}>
                 JPG, PNG, WebP · Max {maxFiles} images · {maxFiles - previews.length} remaining
               </p>
             </div>
@@ -63,8 +78,8 @@ export default function ClothingUploader({ value = [], onChange, maxFiles = 4 })
       {previews.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
           {previews.map((p, i) => (
-            <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#2A2A2A] group">
-              <img src={p.url} alt={`Garment ${i + 1}`} className="w-full h-full object-cover" />
+            <div key={i} style={{ position: 'relative', aspectRatio: '4/3', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E8E4DC' }} className="group">
+              <img src={p.url} alt={`Garment ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all" />
               <button
                 onClick={() => remove(i)}

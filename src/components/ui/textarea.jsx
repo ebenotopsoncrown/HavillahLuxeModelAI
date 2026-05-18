@@ -4,7 +4,7 @@ export function Textarea({ className, ...props }) {
   return (
     <textarea
       className={cn(
-        'w-full rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-2 text-sm text-[#F8F5F0] placeholder:text-[#F8F5F0]/30 focus:outline-none focus:border-[#C6A052]/50 focus:ring-1 focus:ring-[#C6A052]/30 transition-colors resize-none',
+        'w-full rounded border border-[#E8E4DC] bg-white px-3 py-2 text-sm text-[#0D0D0D] placeholder:text-[#AAAAAA] focus:outline-none focus:border-[#B8960C] transition-colors resize-none',
         className
       )}
       {...props}

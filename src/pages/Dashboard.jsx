@@ -12,21 +12,23 @@ function StatCard({ icon: Icon, label, value }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: '#141414',
-        border: '1px solid #1E1E1E',
-        borderTop: '1px solid #B8960C',
+        background: '#FFFFFF',
+        border: '1px solid #E8E4DC',
+        borderTop: '2px solid #B8960C',
         borderRadius: '4px',
         padding: '28px 24px',
         transition: 'all 0.2s ease',
         transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
+        boxShadow: hovered
+          ? '0 4px 12px rgba(0,0,0,0.08)'
+          : '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)',
       }}
     >
-      <Icon size={20} style={{ color: '#2A2A2A', marginBottom: '20px', display: 'block' }} />
-      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', lineHeight: 1, marginBottom: '10px' }}>
+      <Icon size={20} style={{ color: '#E8E4DC', marginBottom: '20px', display: 'block' }} />
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '36px', fontWeight: 300, color: '#0D0D0D', lineHeight: 1, marginBottom: '10px' }}>
         {value}
       </div>
-      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#444' }}>
+      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6B6B6B' }}>
         {label}
       </div>
     </div>
@@ -42,11 +44,23 @@ function ProjectCard({ project, onDelete }) {
     ? { border: '1px solid #B8960C', color: '#B8960C' }
     : project.status === 'generating'
     ? { border: '1px solid #B8960C', color: '#B8960C', opacity: 0.5 }
-    : { border: '1px solid #2A2A2A', color: '#555' }
+    : { border: '1px solid #E8E4DC', color: '#6B6B6B' }
 
   return (
     <div
-      style={{ borderRadius: '4px', overflow: 'hidden', background: '#141414', position: 'relative', cursor: 'pointer', aspectRatio: '3 / 4' }}
+      style={{
+        borderRadius: '4px',
+        overflow: 'hidden',
+        background: thumbnail ? '#0D0D0D' : '#FFFFFF',
+        border: thumbnail ? 'none' : '1px solid #E8E4DC',
+        position: 'relative',
+        cursor: 'pointer',
+        aspectRatio: '3 / 4',
+        boxShadow: hovered
+          ? '0 4px 12px rgba(0,0,0,0.08)'
+          : '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)',
+        transition: 'box-shadow 0.2s ease',
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(`/project?id=${project.id}`)}
@@ -58,8 +72,8 @@ function ProjectCard({ project, onDelete }) {
           style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hovered ? 'scale(1.03)' : 'scale(1)', transition: 'transform 0.4s ease' }}
         />
       ) : (
-        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0F0F0F' }}>
-          <Image size={32} style={{ color: '#1E1E1E' }} />
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8F5F0' }}>
+          <Image size={32} style={{ color: '#E8E4DC' }} />
         </div>
       )}
 
@@ -81,7 +95,7 @@ function ProjectCard({ project, onDelete }) {
           <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '2px 7px', borderRadius: '2px', ...statusStyle }}>
             {project.status || 'draft'}
           </span>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: '#555' }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: '#AAAAAA' }}>
             {new Date(project.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
           </span>
         </div>
@@ -91,9 +105,9 @@ function ProjectCard({ project, onDelete }) {
       {hovered && (
         <button
           onClick={e => { e.stopPropagation(); onDelete(project.id) }}
-          style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', background: 'rgba(8,8,8,0.8)', border: '1px solid #2A2A2A', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', transition: 'color 0.2s ease' }}
+          style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', background: 'rgba(255,255,255,0.9)', border: '1px solid #E8E4DC', borderRadius: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6B6B', transition: 'color 0.2s ease' }}
           onMouseEnter={e => e.currentTarget.style.color = '#CC4444'}
-          onMouseLeave={e => e.currentTarget.style.color = '#555'}
+          onMouseLeave={e => e.currentTarget.style.color = '#6B6B6B'}
         >
           <X size={12} />
         </button>
@@ -146,10 +160,10 @@ export default function Dashboard() {
           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '14px' }}>
             Havillah Studio
           </div>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '42px', fontWeight: 300, color: '#F5F0E8', lineHeight: 1.05, marginBottom: '10px' }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '42px', fontWeight: 300, color: '#0D0D0D', lineHeight: 1.05, marginBottom: '10px' }}>
             Your Creative Studio
           </h1>
-          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#555', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#6B6B6B', lineHeight: 1.6 }}>
             Generate world-class fashion model imagery
           </p>
         </div>
@@ -181,16 +195,16 @@ export default function Dashboard() {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4" style={{ gap: '20px' }}>
             {[...Array(4)].map((_, i) => (
-              <div key={i} style={{ aspectRatio: '3/4', background: '#141414', borderRadius: '4px' }} className="animate-pulse" />
+              <div key={i} style={{ aspectRatio: '3/4', background: '#F0EDE6', borderRadius: '4px' }} className="animate-pulse" />
             ))}
           </div>
         ) : projects.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 48px', border: '1px dashed #1E1E1E', borderRadius: '4px' }}>
-            <Crown size={64} style={{ color: '#1E1E1E', margin: '0 auto 28px', display: 'block' }} />
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', fontWeight: 300, color: '#F5F0E8', marginBottom: '12px' }}>
+          <div style={{ textAlign: 'center', padding: '80px 48px', border: '1.5px dashed #D4C9B0', borderRadius: '4px', background: '#FFFFFF' }}>
+            <Crown size={64} style={{ color: '#E8E4DC', margin: '0 auto 28px', display: 'block' }} />
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', fontWeight: 300, color: '#0D0D0D', marginBottom: '12px' }}>
               Begin Your Collection
             </h2>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#555', marginBottom: '32px', lineHeight: 1.7 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#6B6B6B', marginBottom: '32px', lineHeight: 1.7 }}>
               Upload a garment and generate your first AI model image
             </p>
             <Link to="/new-project">
@@ -232,7 +246,7 @@ function GoldButton({ children, onClick, disabled }) {
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.12em',
-        color: '#080808',
+        color: '#0D0D0D',
         display: 'inline-flex',
         alignItems: 'center',
         gap: '8px',
@@ -253,7 +267,7 @@ function ViewAllLink({ to }) {
       to={to}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: hovered ? '#B8960C' : '#444', transition: 'color 0.2s ease', textDecoration: 'none' }}
+      style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: hovered ? '#B8960C' : '#AAAAAA', transition: 'color 0.2s ease', textDecoration: 'none' }}
     >
       View All →
     </Link>

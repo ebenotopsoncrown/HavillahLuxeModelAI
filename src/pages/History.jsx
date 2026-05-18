@@ -47,7 +47,7 @@ export default function History() {
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '10px' }}>
           Archive
         </div>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', marginBottom: '20px' }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#0D0D0D', marginBottom: '20px' }}>
           Project History
         </h1>
         <div style={{ width: '40px', height: '1px', background: '#B8960C' }} />
@@ -56,10 +56,10 @@ export default function History() {
       <div style={{ padding: '40px 48px', display: 'flex', flexDirection: 'column', gap: '0' }}>
 
         {/* Search Bar + Meta Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', marginBottom: '0', paddingBottom: '20px', borderBottom: '1px solid #1A1A1A' }} className="flex-col sm:flex-row">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', marginBottom: '0', paddingBottom: '20px', borderBottom: '1px solid #E8E4DC' }} className="flex-col sm:flex-row">
           {/* Search */}
           <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-            <Search size={13} style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: searchFocused ? '#B8960C' : '#444', transition: 'color 0.2s ease' }} />
+            <Search size={13} style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: searchFocused ? '#B8960C' : '#AAAAAA', transition: 'color 0.2s ease' }} />
             <input
               type="text"
               value={search}
@@ -71,19 +71,19 @@ export default function History() {
                 width: '100%',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: `1px solid ${searchFocused ? '#B8960C' : '#2A2A2A'}`,
+                borderBottom: `1px solid ${searchFocused ? '#B8960C' : '#E8E4DC'}`,
                 borderRadius: 0,
                 outline: 'none',
                 padding: '10px 0 10px 22px',
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: '13px',
-                color: '#F5F0E8',
+                color: '#0D0D0D',
                 transition: 'border-color 0.2s ease',
                 caretColor: '#B8960C',
               }}
             />
           </div>
-          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#444', flexShrink: 0 }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#AAAAAA', flexShrink: 0 }}>
             {filtered.length} project{filtered.length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -92,7 +92,7 @@ export default function History() {
         {!loading && filtered.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr 140px 100px 80px 100px', gap: '16px', padding: '12px 16px', alignItems: 'center' }}>
             {['', 'Project', 'Date', 'Status', 'Images', ''].map((col, i) => (
-              <div key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#333' }}>
+              <div key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#AAAAAA' }}>
                 {col}
               </div>
             ))}
@@ -105,14 +105,14 @@ export default function History() {
             <RotateCw size={20} style={{ color: '#B8960C' }} className="animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 48px', border: '1px dashed #1A1A1A', borderRadius: '4px', marginTop: '0' }}>
-            <Image size={32} style={{ color: '#1E1E1E', margin: '0 auto 16px', display: 'block' }} />
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#444' }}>
+          <div style={{ textAlign: 'center', padding: '80px 48px', border: '1.5px dashed #D4C9B0', borderRadius: '4px', marginTop: '0', background: '#FFFFFF' }}>
+            <Image size={32} style={{ color: '#E8E4DC', margin: '0 auto 16px', display: 'block' }} />
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#6B6B6B' }}>
               {search ? 'No projects match your search' : 'No projects yet'}
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             {filtered.map((project, index) => (
               <ProjectRow
                 key={project.id}
@@ -138,7 +138,7 @@ function ProjectRow({ project, onOpen, onDelete, isLast }) {
     ? { border: '1px solid #B8960C', color: '#B8960C', opacity: 0.5 }
     : project.status === 'failed'
     ? { border: '1px solid #CC4444', color: '#CC4444' }
-    : { border: '1px solid #2A2A2A', color: '#555' }
+    : { border: '1px solid #E8E4DC', color: '#6B6B6B' }
 
   return (
     <div
@@ -151,8 +151,8 @@ function ProjectRow({ project, onOpen, onDelete, isLast }) {
         padding: '0 16px',
         height: '64px',
         alignItems: 'center',
-        background: hovered ? '#141414' : 'transparent',
-        borderBottom: isLast ? 'none' : '1px solid #141414',
+        background: hovered ? '#FAFAF8' : '#FFFFFF',
+        borderBottom: isLast ? 'none' : '1px solid #F0EDE6',
         transition: 'background 0.15s ease',
         cursor: 'default',
       }}
@@ -160,7 +160,7 @@ function ProjectRow({ project, onOpen, onDelete, isLast }) {
       {/* Thumbnail */}
       <div
         onClick={onOpen}
-        style={{ width: '40px', height: '40px', borderRadius: '2px', overflow: 'hidden', background: '#0F0F0F', flexShrink: 0, cursor: 'pointer' }}
+        style={{ width: '40px', height: '40px', borderRadius: '2px', overflow: 'hidden', background: '#F8F5F0', flexShrink: 0, cursor: 'pointer' }}
       >
         {project.clothing_image_urls?.[0] ? (
           <img
@@ -170,7 +170,7 @@ function ProjectRow({ project, onOpen, onDelete, isLast }) {
           />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Image size={14} style={{ color: '#1E1E1E' }} />
+            <Image size={14} style={{ color: '#E8E4DC' }} />
           </div>
         )}
       </div>
@@ -180,16 +180,16 @@ function ProjectRow({ project, onOpen, onDelete, isLast }) {
         onClick={onOpen}
         style={{ cursor: 'pointer', minWidth: 0 }}
       >
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 500, color: hovered ? '#F5F0E8' : '#CCC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.15s ease' }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 500, color: hovered ? '#0D0D0D' : '#3A3A3A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', transition: 'color 0.15s ease' }}>
           {project.name}
         </div>
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#444', marginTop: '2px' }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#AAAAAA', marginTop: '2px' }}>
           {project.gender || 'female'} model
         </div>
       </div>
 
       {/* Date */}
-      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#444' }}>
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#AAAAAA' }}>
         {new Date(project.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
       </div>
 
@@ -213,7 +213,7 @@ function ProjectRow({ project, onOpen, onDelete, isLast }) {
       </div>
 
       {/* Image Count */}
-      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '13px', color: '#555' }}>
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '13px', color: '#6B6B6B' }}>
         {project.generation_count || 0}
       </div>
 
@@ -241,14 +241,14 @@ function ActionBtn({ children, onClick, danger, title }) {
       style={{
         width: '30px',
         height: '30px',
-        background: 'transparent',
-        border: `1px solid ${hovered ? (danger ? '#CC4444' : '#2A2A2A') : '#1E1E1E'}`,
+        background: hovered ? '#F8F5F0' : 'transparent',
+        border: `1px solid ${hovered ? (danger ? '#CC4444' : '#D4C9B0') : '#E8E4DC'}`,
         borderRadius: '2px',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: hovered ? (danger ? '#CC4444' : '#F5F0E8') : '#444',
+        color: hovered ? (danger ? '#CC4444' : '#0D0D0D') : '#AAAAAA',
         transition: 'all 0.15s ease',
         flexShrink: 0,
       }}

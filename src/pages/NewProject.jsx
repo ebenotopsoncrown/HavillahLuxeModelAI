@@ -144,7 +144,7 @@ export default function NewProject() {
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C', marginBottom: '10px' }}>
           New Project
         </div>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#F5F0E8', marginBottom: '20px' }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: '#0D0D0D', marginBottom: '20px' }}>
           Create Your Collection
         </h1>
         <div style={{ width: '40px', height: '1px', background: '#B8960C' }} />
@@ -152,17 +152,17 @@ export default function NewProject() {
 
       {/* Generating Banner */}
       {generating && (
-        <div style={{ margin: '32px 48px 0', background: '#141414', border: '1px solid rgba(184,150,12,0.25)', borderRadius: '4px', padding: '20px 24px' }}>
+        <div style={{ margin: '32px 48px 0', background: '#FFFFFF', border: '1px solid rgba(184,150,12,0.3)', borderRadius: '4px', padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
             <Sparkles size={13} style={{ color: '#B8960C' }} className="animate-pulse" />
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '12px', fontWeight: 500, color: '#B8960C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               {progressMsg}
             </span>
           </div>
-          <div style={{ height: '2px', background: '#1A1A1A', borderRadius: '1px', overflow: 'hidden' }}>
+          <div style={{ height: '2px', background: '#E8E4DC', borderRadius: '1px', overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.3s ease' }} />
           </div>
-          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#444', marginTop: '8px' }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#6B6B6B', marginTop: '8px' }}>
             {Math.round(progress)}% complete
           </div>
         </div>
@@ -172,10 +172,10 @@ export default function NewProject() {
       <div className="grid grid-cols-1 lg:grid-cols-[55%_45%]" style={{ padding: '40px 48px', gap: '48px' }}>
 
         {/* LEFT COLUMN */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '40px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {/* Project Name */}
           <div>
-            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#555', marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#B8960C', marginBottom: '8px' }}>
               Project Name
             </label>
             <input
@@ -190,14 +190,14 @@ export default function NewProject() {
                 width: '100%',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: `1px solid ${nameFocused ? '#B8960C' : '#2A2A2A'}`,
+                borderBottom: `1px solid ${nameFocused ? '#B8960C' : '#E8E4DC'}`,
                 borderRadius: 0,
                 outline: 'none',
                 padding: '14px 0',
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: '20px',
                 fontWeight: 300,
-                color: '#F5F0E8',
+                color: '#0D0D0D',
                 transition: 'border-color 0.2s ease',
                 caretColor: '#B8960C',
               }}
@@ -206,7 +206,7 @@ export default function NewProject() {
 
           {/* Upload Zone */}
           <div>
-            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#555', marginBottom: '12px' }}>
+            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#B8960C', marginBottom: '12px' }}>
               Garment Photos
             </label>
             <ClothingUploader value={files} onChange={setFiles} maxFiles={4} />
@@ -216,21 +216,21 @@ export default function NewProject() {
           <div>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               Model Identity &amp; Appearance
-              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+              <div style={{ flex: 1, height: '1px', background: '#E8E4DC' }} />
             </div>
             <ModelConfigPanel config={config} onChange={setConfig} />
           </div>
         </div>
 
         {/* RIGHT COLUMN (sticky) */}
-        <div className="lg:sticky lg:top-8 self-start" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        <div className="lg:sticky lg:top-8 self-start" style={{ background: '#FFFFFF', border: '1px solid #E8E4DC', borderLeft: '1px solid #E8E4DC', borderRadius: '4px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
 
           {/* Scene — Pose */}
           <div>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Camera size={11} />
               Pose
-              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+              <div style={{ flex: 1, height: '1px', background: '#E8E4DC' }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
               {POSES.map(p => (
@@ -251,7 +251,7 @@ export default function NewProject() {
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Mountain size={11} />
               Background
-              <div style={{ flex: 1, height: '1px', background: '#1A1A1A' }} />
+              <div style={{ flex: 1, height: '1px', background: '#E8E4DC' }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
               {BACKGROUNDS.map(b => (
@@ -269,7 +269,7 @@ export default function NewProject() {
 
           {/* Custom Instructions */}
           <div>
-            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#555', marginBottom: '12px' }}>
+            <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#B8960C', marginBottom: '12px' }}>
               Custom Instructions
             </label>
             <textarea
@@ -278,15 +278,15 @@ export default function NewProject() {
               disabled={generating}
               placeholder="Any additional styling or scene details..."
               rows={3}
-              style={{ width: '100%', background: '#0F0F0F', border: '1px solid #1E1E1E', borderRadius: '4px', padding: '12px 14px', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#F5F0E8', resize: 'none', outline: 'none', transition: 'border-color 0.2s ease', lineHeight: 1.6 }}
+              style={{ width: '100%', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '12px 14px', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#0D0D0D', resize: 'none', outline: 'none', transition: 'border-color 0.2s ease', lineHeight: 1.6 }}
               onFocus={e => e.target.style.borderColor = '#B8960C'}
-              onBlur={e => e.target.style.borderColor = '#1E1E1E'}
+              onBlur={e => e.target.style.borderColor = '#E8E4DC'}
             />
           </div>
 
           {/* Generation Panel */}
-          <div style={{ background: '#141414', border: '1px solid #1E1E1E', borderTop: '1px solid #B8960C', borderRadius: '4px', padding: '24px' }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#555', marginBottom: '16px' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E8E4DC', borderTop: '2px solid #B8960C', borderRadius: '4px', padding: '24px' }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '16px' }}>
               Images to Generate
             </div>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
@@ -300,7 +300,7 @@ export default function NewProject() {
                 />
               ))}
             </div>
-            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#444', marginBottom: '20px' }}>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#6B6B6B', marginBottom: '20px' }}>
               Costs {imageCount} credit{imageCount !== 1 ? 's' : ''} · {profile?.credits || 0} available
             </div>
             <GenerateButton onClick={handleGenerate} generating={generating} imageCount={imageCount} disabled={generating || files.length === 0 || !projectName.trim()} />
@@ -320,8 +320,8 @@ function SceneOption({ icon, label, selected, onClick, disabled }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: selected ? 'rgba(184,150,12,0.08)' : hovered ? '#141414' : '#0F0F0F',
-        border: selected ? '1px solid #B8960C' : `1px solid ${hovered ? '#2A2A2A' : '#1E1E1E'}`,
+        background: selected ? 'rgba(184,150,12,0.06)' : hovered ? '#F8F5F0' : '#FAFAF8',
+        border: selected ? '1px solid #B8960C' : `1px solid ${hovered ? '#D4C9B0' : '#E8E4DC'}`,
         borderRadius: '4px',
         padding: '10px 4px',
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -331,7 +331,7 @@ function SceneOption({ icon, label, selected, onClick, disabled }) {
       }}
     >
       <div style={{ fontSize: '18px', marginBottom: '6px' }}>{icon}</div>
-      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: selected ? '#B8960C' : '#555', lineHeight: 1.2 }}>
+      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: selected ? '#B8960C' : '#6B6B6B', lineHeight: 1.2 }}>
         {label}
       </div>
     </button>
@@ -349,14 +349,14 @@ function CountButton({ value, selected, onClick, disabled }) {
       style={{
         flex: 1,
         height: '40px',
-        background: selected ? 'rgba(184,150,12,0.1)' : 'transparent',
-        border: selected ? '1px solid #B8960C' : `1px solid ${hovered ? '#2A2A2A' : '#1E1E1E'}`,
+        background: selected ? 'rgba(184,150,12,0.08)' : 'transparent',
+        border: selected ? '1px solid #B8960C' : `1px solid ${hovered ? '#D4C9B0' : '#E8E4DC'}`,
         borderRadius: '2px',
         cursor: disabled ? 'not-allowed' : 'pointer',
         fontFamily: "'DM Mono', monospace",
         fontSize: '14px',
         fontWeight: 400,
-        color: selected ? '#B8960C' : hovered ? '#999' : '#555',
+        color: selected ? '#B8960C' : hovered ? '#3A3A3A' : '#6B6B6B',
         transition: 'all 0.15s ease',
         opacity: disabled ? 0.5 : 1,
       }}
@@ -386,7 +386,7 @@ function GenerateButton({ onClick, generating, imageCount, disabled }) {
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.15em',
-        color: disabled ? 'rgba(8,8,8,0.5)' : '#080808',
+        color: disabled ? 'rgba(13,13,13,0.4)' : '#0D0D0D',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

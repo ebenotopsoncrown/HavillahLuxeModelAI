@@ -77,7 +77,7 @@ export default function ModelConfigPanel({ config, onChange }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-[#C6A052] uppercase tracking-wider">Model Configuration</h3>
+      <h3 className="text-sm font-semibold text-[#B8960C] uppercase tracking-wider">Model Configuration</h3>
 
       {/* Core fields */}
       <div className="grid grid-cols-2 gap-3">
@@ -116,8 +116,8 @@ export default function ModelConfigPanel({ config, onChange }) {
         </div>
       )}
 
-      <div className="border-t border-[#2A2A2A] pt-3">
-        <h3 className="text-sm font-semibold text-[#C6A052] uppercase tracking-wider mb-3">Garment Details</h3>
+      <div className="border-t border-[#E8E4DC] pt-3">
+        <h3 className="text-sm font-semibold text-[#B8960C] uppercase tracking-wider mb-3">Garment Details</h3>
         <div className="grid grid-cols-3 gap-3">
           <div>
             <Label>Type</Label>
@@ -152,7 +152,7 @@ export default function ModelConfigPanel({ config, onChange }) {
         </div>
       </div>
 
-      <div className="border-t border-[#2A2A2A] pt-3">
+      <div className="border-t border-[#E8E4DC] pt-3">
         <Label>Custom Instructions (overrides defaults)</Label>
         <Textarea
           rows={3}
