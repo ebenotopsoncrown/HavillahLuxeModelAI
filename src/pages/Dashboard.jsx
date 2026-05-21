@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { Folder, Image, Star, Crown, PlusCircle, CheckCircle2, X } from 'lucide-react'
+import { getLuxeModelProducts } from '../lib/marketplaceAgent'
+import { Folder, Image, Star, Crown, PlusCircle, CheckCircle2, X, ShoppingBag, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
 function StatCard({ icon: Icon, label, value }) {
@@ -121,6 +122,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([])
   const [stats, setStats] = useState({ total: 0, completed: 0, images: 0, favorites: 0 })
   const [loading, setLoading] = useState(true)
+  const [publishedProducts, setPublishedProducts] = useState([])
 
   useEffect(() => {
     if (user) loadDashboard()
@@ -137,6 +139,9 @@ export default function Dashboard() {
       setProjects(projectsData || [])
       const completed = (projectsData || []).filter(p => p.status === 'completed').length
       setStats({ total: (projectsData || []).length, completed, images: imgCount || 0, favorites: favCount || 0 })
+
+      // Load marketplace products (non-blocking)
+      getLuxeModelProducts(user.id).then(setPublishedProducts).catch(() => {})
     } catch {
       toast.error('Failed to load dashboard')
     } finally {
@@ -222,6 +227,63 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      {/* Published to Marketplace */}
+      {publishedProducts.length > 0 && (
+        <div style={{ padding: '0 48px 48px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <ShoppingBag size={14} style={{ color: '#B8960C' }} />
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#B8960C' }}>
+                Published to Marketplace
+              </span>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#6B6B6B', background: '#F0EDE6', padding: '1px 8px', borderRadius: '12px' }}>
+                {publishedProducts.length}
+              </span>
+            </div>
+            <a
+              href={import.meta.env.VITE_MARKETPLACE_URL || 'https://havillah-marketplace.vercel.app'}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#AAAAAA', textDecoration: 'none' }}
+            >
+              View All on Marketplace <ExternalLink size={11} />
+            </a>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '16px' }}>
+            {publishedProducts.slice(0, 4).map(product => (
+              <div
+                key={product.id}
+                style={{ borderRadius: '4px', border: '1px solid #E8E4DC', overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+              >
+                <div style={{ aspectRatio: '3/4', background: '#F8F5F0', overflow: 'hidden' }}>
+                  {product.primary_image_url
+                    ? <img src={product.primary_image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Image size={24} style={{ color: '#E8E4DC' }} /></div>
+                  }
+                </div>
+                <div style={{ padding: '10px 12px' }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '12px', fontWeight: 500, color: '#0D0D0D', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {product.name}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#B8960C' }}>
+                      £{parseFloat(product.price || 0).toFixed(2)}
+                    </span>
+                    <span style={{
+                      fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em',
+                      padding: '2px 7px', borderRadius: '2px',
+                      border: product.status === 'active' ? '1px solid #B8960C' : '1px solid #E8E4DC',
+                      color: product.status === 'active' ? '#B8960C' : '#6B6B6B',
+                    }}>
+                      {product.status || 'draft'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

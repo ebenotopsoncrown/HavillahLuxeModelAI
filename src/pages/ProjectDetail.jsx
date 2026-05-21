@@ -6,13 +6,14 @@ import { generateImage } from '../lib/fal'
 import { buildPrompt } from '../utils/promptBuilder'
 import ListingGenerator from '../components/ListingGenerator'
 import ImageEditor from '../components/ImageEditor'
+import PublishToMarketplace from '../components/PublishToMarketplace'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Progress } from '../components/ui/progress'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog'
 import {
   Download, Star, Trash2, Sparkles, Edit2, RotateCw,
-  Image, ArrowLeft, DownloadCloud,
+  Image, ArrowLeft, DownloadCloud, ShoppingBag,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '../lib/utils'
@@ -29,6 +30,7 @@ export default function ProjectDetail() {
   const [genProgress, setGenProgress] = useState(0)
   const [editImg, setEditImg] = useState(null)
   const [selectedImg, setSelectedImg] = useState(null)
+  const [showPublish, setShowPublish] = useState(false)
 
   useEffect(() => {
     if (projectId && user) loadProject()
@@ -175,6 +177,20 @@ export default function ProjectDetail() {
               <DownloadCloud size={14} /> Download All
             </Button>
           )}
+          {images.length > 0 && (
+            <button
+              onClick={() => setShowPublish(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'linear-gradient(135deg, #B8960C, #DEC05A)',
+                border: 'none', borderRadius: 6, padding: '6px 14px',
+                fontSize: 12, fontWeight: 600, letterSpacing: '0.06em',
+                color: '#0D0D0D', cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              <ShoppingBag size={13} /> Publish to Marketplace
+            </button>
+          )}
           <Button size="sm" onClick={generateMore} disabled={generating}>
             {generating ? <RotateCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
             {generating ? 'Generating...' : 'Generate More'}
@@ -308,6 +324,19 @@ export default function ProjectDetail() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Publish to Marketplace modal */}
+      {showPublish && (
+        <PublishToMarketplace
+          project={project}
+          images={images}
+          onClose={() => setShowPublish(false)}
+          onSuccess={(product) => {
+            toast.success(`"${product.name}" published to Marketplace!`)
+            setShowPublish(false)
+          }}
+        />
+      )}
     </div>
   )
 }
