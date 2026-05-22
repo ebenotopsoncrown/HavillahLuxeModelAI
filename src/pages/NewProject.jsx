@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, uploadFile } from '../lib/supabase'
-import { generateImage } from '../lib/fal'
+import { generateImage, lastProvider } from '../lib/fal'
 import { buildPrompt } from '../utils/promptBuilder'
 import { canGenerate, deductCredits } from '../lib/credits'
 import ClothingUploader from '../components/ClothingUploader'
@@ -54,6 +54,7 @@ export default function NewProject() {
   const [progress, setProgress] = useState(0)
   const [progressMsg, setProgressMsg] = useState('')
   const [nameFocused, setNameFocused] = useState(false)
+  const [preservationStrength, setPreservationStrength] = useState(0.65)
 
   async function handleGenerate() {
     if (!projectName.trim()) { toast.error('Please enter a project name'); return }
@@ -94,8 +95,16 @@ export default function NewProject() {
       for (let i = 0; i < imageCount; i++) {
         setProgressMsg(`Generating image ${i + 1} of ${imageCount}...`)
         setProgress(35 + ((i / imageCount) * 50))
-        const url = await generateImage(prompt, negative_prompt, uploadedUrls)
+        const url = await generateImage(prompt, negative_prompt, uploadedUrls, preservationStrength)
         if (url) generatedUrls.push({ url, prompt })
+      }
+
+      // Warn if Fal.ai balance ran out and we fell back to text-to-image
+      if (lastProvider === 'pollinations-fallback') {
+        toast.warning(
+          'Fal.ai balance exhausted — images generated without garment lock. Top up at fal.ai/dashboard/billing for exact garment matching.',
+          { duration: 8000 }
+        )
       }
 
       setProgress(88)
@@ -284,6 +293,34 @@ export default function NewProject() {
               onFocus={e => e.target.style.borderColor = '#B8960C'}
               onBlur={e => e.target.style.borderColor = '#E8E4DC'}
             />
+          </div>
+
+          {/* Garment Preservation Strength */}
+          <div style={{ background: '#FAFAF8', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '20px' }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '14px' }}>
+              Garment Preservation
+            </div>
+            <input
+              type="range"
+              min="0.5"
+              max="0.85"
+              step="0.05"
+              value={preservationStrength}
+              onChange={e => setPreservationStrength(parseFloat(e.target.value))}
+              disabled={generating}
+              style={{ width: '100%', accentColor: '#B8960C', cursor: generating ? 'not-allowed' : 'pointer' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#AAAAAA' }}>Maximum</span>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: '#B8960C', fontWeight: 600 }}>
+                {preservationStrength <= 0.55 ? 'Maximum' : preservationStrength <= 0.70 ? 'Balanced' : 'Creative'}
+                {' '}({preservationStrength})
+              </span>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#AAAAAA' }}>Creative</span>
+            </div>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#AAAAAA', marginTop: '8px', lineHeight: 1.5 }}>
+              Lower = garment preserved more strictly. Higher = model has more creative freedom.
+            </p>
           </div>
 
           {/* Generation Panel */}

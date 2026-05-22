@@ -1,26 +1,97 @@
 import { supabase } from './supabase'
 
-const TIMEOUT_MS = 90_000 // Pollinations can take up to 60s on first request
+const FAL_KEY = import.meta.env.VITE_FAL_API_KEY
+const TIMEOUT_MS = 120_000
 
-export async function generateImage(prompt, negativePrompt, referenceImageUrls = []) {
-  const seed = Math.floor(Math.random() * 999999)
+// Callers can read this after generateImage() to know which engine ran
+export let lastProvider = 'unknown'
 
-  // Weave clothing context into the prompt so the model knows what to render
-  const fullPrompt = referenceImageUrls.length > 0
-    ? `${prompt}, wearing the exact garment style from the reference, high-end fashion photography`
-    : prompt
+// ── Fal.ai img2img (garment preservation) ─────────────
+async function falImg2Img(prompt, negativePrompt, referenceUrl, strength) {
+  const res = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
+    method: 'POST',
+    headers: { Authorization: `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt,
+      negative_prompt: negativePrompt,
+      image_url: referenceUrl,
+      strength,
+      num_inference_steps: 35,
+      guidance_scale: 7.5,
+      num_images: 1,
+      image_size: 'portrait_4_3',
+      enable_safety_checker: false,
+    }),
+  })
 
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Fal.ai error: ${err}`)
+  }
+
+  const data = await res.json()
+  if (data.images?.[0]?.url) return data.images[0].url
+  if (data.image?.url) return data.image.url
+  if (data.request_id) return await pollFalJob(data.request_id)
+  throw new Error('No image URL in Fal.ai response')
+}
+
+// ── Fal.ai text-to-image (no reference) ───────────────
+async function falText2Img(prompt, negativePrompt) {
+  const res = await fetch('https://fal.run/fal-ai/flux/dev', {
+    method: 'POST',
+    headers: { Authorization: `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt,
+      negative_prompt: negativePrompt,
+      num_inference_steps: 35,
+      guidance_scale: 7.5,
+      num_images: 1,
+      image_size: 'portrait_4_3',
+      enable_safety_checker: false,
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Fal.ai error: ${err}`)
+  }
+
+  const data = await res.json()
+  if (data.images?.[0]?.url) return data.images[0].url
+  if (data.request_id) return await pollFalJob(data.request_id)
+  throw new Error('No image URL in Fal.ai response')
+}
+
+// ── Poll async Fal.ai job ──────────────────────────────
+async function pollFalJob(requestId, maxAttempts = 40) {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, 2000))
+    const res = await fetch(
+      `https://fal.run/fal-ai/flux/dev/requests/${requestId}`,
+      { headers: { Authorization: `Key ${FAL_KEY}` } }
+    )
+    const data = await res.json()
+    if (data.status === 'COMPLETED') {
+      return data.output?.images?.[0]?.url || data.images?.[0]?.url
+    }
+    if (data.status === 'FAILED') throw new Error('Fal.ai job failed: ' + data.error)
+  }
+  throw new Error('Fal.ai job timed out')
+}
+
+// ── Pollinations fallback (text-to-image only) ─────────
+async function pollinationsText2Img(prompt, seed) {
   const url =
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}` +
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
     `?width=768&height=1024&model=flux&seed=${seed}&nologo=true&enhance=true`
 
-  // Fetch with timeout
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-  let response
+  let res
   try {
-    response = await fetch(url, { signal: controller.signal })
+    res = await fetch(url, { signal: controller.signal })
   } catch (err) {
     throw new Error(err.name === 'AbortError'
       ? 'Image generation timed out — please try again'
@@ -29,19 +100,79 @@ export async function generateImage(prompt, negativePrompt, referenceImageUrls =
     clearTimeout(timer)
   }
 
-  if (!response.ok) throw new Error(`Generation failed: ${response.status}`)
-
-  const blob = await response.blob()
+  if (!res.ok) throw new Error(`Pollinations error: ${res.status}`)
+  const blob = await res.blob()
   if (blob.size < 5000) throw new Error('Generated image too small — please try again')
+  return blob
+}
 
-  // Upload to Supabase for a permanent URL
+function isBillingError(msg) {
+  return (
+    msg.includes('Exhausted balance') ||
+    msg.includes('User is locked') ||
+    msg.includes('locked') ||
+    msg.includes('402')
+  )
+}
+
+// ── Upload to permanent Supabase storage ───────────────
+async function uploadToStorage(source, seed) {
   const fileName = `gen-${Date.now()}-${seed}.jpg`
-  const { error: uploadError } = await supabase.storage
+  let blob = source
+
+  if (typeof source === 'string') {
+    const res = await fetch(source)
+    if (!res.ok) throw new Error('Failed to download generated image from Fal.ai')
+    blob = await res.blob()
+  }
+
+  const { error } = await supabase.storage
     .from('generated-images')
     .upload(fileName, blob, { contentType: 'image/jpeg' })
 
-  if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`)
-
+  if (error) throw new Error(`Storage upload failed: ${error.message}`)
   const { data } = supabase.storage.from('generated-images').getPublicUrl(fileName)
   return data.publicUrl
+}
+
+// ── Main export ────────────────────────────────────────
+// strength: 0.5 (preserve garment more) → 0.85 (more creative)
+export async function generateImage(
+  prompt,
+  negativePrompt,
+  referenceImageUrls = [],
+  strength = 0.65
+) {
+  const seed = Math.floor(Math.random() * 999999)
+  const referenceUrl = referenceImageUrls[0] || null
+
+  // ── Path 1: Fal.ai img2img — true garment preservation ──
+  if (FAL_KEY && referenceUrl) {
+    try {
+      const falUrl = await falImg2Img(prompt, negativePrompt, referenceUrl, strength)
+      lastProvider = 'fal-img2img'
+      return await uploadToStorage(falUrl, seed)
+    } catch (err) {
+      if (!isBillingError(err.message || '')) throw err
+      // Balance exhausted — fall through to Pollinations
+      lastProvider = 'pollinations-fallback'
+    }
+  }
+
+  // ── Path 2: Fal.ai text-to-image (no reference provided) ──
+  if (FAL_KEY && !referenceUrl) {
+    try {
+      const falUrl = await falText2Img(prompt, negativePrompt)
+      lastProvider = 'fal-text2img'
+      return await uploadToStorage(falUrl, seed)
+    } catch (err) {
+      if (!isBillingError(err.message || '')) throw err
+      lastProvider = 'pollinations-fallback'
+    }
+  }
+
+  // ── Path 3: Pollinations fallback ──
+  lastProvider = 'pollinations-fallback'
+  const blob = await pollinationsText2Img(prompt, seed)
+  return await uploadToStorage(blob, seed)
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { generateImage } from '../lib/fal'
+import { generateImage, lastProvider } from '../lib/fal'
 import { buildPrompt } from '../utils/promptBuilder'
 import { canGenerate, deductCredits } from '../lib/credits'
 import ListingGenerator from '../components/ListingGenerator'
@@ -105,7 +105,10 @@ export default function ProjectDetail() {
       })
 
       setGenProgress(30)
-      const url = await generateImage(prompt, negative_prompt, project.clothing_image_urls || [])
+      const url = await generateImage(prompt, negative_prompt, project.clothing_image_urls || [], 0.65)
+      if (lastProvider === 'pollinations-fallback') {
+        toast.warning('Fal.ai balance exhausted — top up at fal.ai/dashboard/billing for garment preservation.', { duration: 8000 })
+      }
       setGenProgress(80)
 
       if (url) {

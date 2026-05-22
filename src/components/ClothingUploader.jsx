@@ -31,6 +31,27 @@ export default function ClothingUploader({ value = [], onChange, maxFiles = 4 })
 
   return (
     <div className="space-y-3">
+      {/* Photo tips */}
+      <div style={{ background: 'rgba(184,150,12,0.04)', border: '1px solid rgba(184,150,12,0.2)', borderRadius: '6px', padding: '12px 14px' }}>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#B8960C', marginBottom: '8px' }}>
+          Photo Tips for Best Garment Accuracy
+        </p>
+        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {[
+            'Use a flat-lay photo or photo on a plain hanger',
+            'Ensure the ENTIRE garment is visible in frame',
+            'Use good lighting — avoid harsh shadows',
+            'Plain or white background works best',
+            'Higher resolution = better garment preservation',
+          ].map(tip => (
+            <li key={tip} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#6B6B6B', display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+              <span style={{ color: '#B8960C', flexShrink: 0 }}>—</span>
+              {tip}
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* Drop zone */}
       {previews.length < maxFiles && (
         <div
