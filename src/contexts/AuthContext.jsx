@@ -18,11 +18,25 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   async function fetchProfile(userId, authUser) {
-    const { data } = await supabase.from('users').select('*').eq('id', userId).single()
+    let { data } = await supabase.from('users').select('*').eq('id', userId).maybeSingle()
+
+    // Auto-create profile row if it doesn't exist (handles new Supabase project migration)
+    if (!data) {
+      const { data: created } = await supabase.from('users').insert({
+        id: userId,
+        email: authUser?.email ?? '',
+        full_name: authUser?.user_metadata?.full_name ?? authUser?.email?.split('@')[0] ?? 'User',
+        role: 'user',
+        credits: 10,
+        total_generations: 0,
+      }).select().single()
+      data = created
+    }
+
     const isAdmin = checkIsAdmin(authUser)
     setProfile(isAdmin
-      ? { ...data, isAdmin: true, unlimited: true, credits: 999999 }
-      : (data || null)
+      ? { ...(data ?? {}), isAdmin: true, unlimited: true, credits: 999999 }
+      : (data ?? null)
     )
   }
 
