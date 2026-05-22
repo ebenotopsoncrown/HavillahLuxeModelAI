@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { generateImage, lastProvider } from '../lib/fal'
-import { buildPrompt } from '../utils/promptBuilder'
+import { buildPrompt, buildBaseModelPrompt } from '../utils/promptBuilder'
 import { canGenerate, deductCredits } from '../lib/credits'
 import ListingGenerator from '../components/ListingGenerator'
 import ImageEditor from '../components/ImageEditor'
@@ -87,7 +87,7 @@ export default function ProjectDetail() {
     setGenerating(true)
     setGenProgress(10)
     try {
-      const { prompt, negative_prompt } = buildPrompt({
+      const projectConfig = {
         gender: project.gender,
         age_range: project.age_range,
         skin_tone: project.skin_tone,
@@ -102,10 +102,15 @@ export default function ProjectDetail() {
         custom_instructions: project.custom_instructions,
         pose: project.pose,
         background: project.background,
-      })
+      }
+      const { prompt, negative_prompt } = buildPrompt(projectConfig)
+      const { prompt: baseModelPrompt } = buildBaseModelPrompt(projectConfig)
 
       setGenProgress(30)
-      const url = await generateImage(prompt, negative_prompt, project.clothing_image_urls || [], 0.65)
+      const url = await generateImage(
+        prompt, negative_prompt, project.clothing_image_urls || [], 0.65,
+        baseModelPrompt, project.garment_type
+      )
       if (lastProvider === 'pollinations-fallback') {
         toast.warning('Fal.ai balance exhausted — top up at fal.ai/dashboard/billing for garment preservation.', { duration: 8000 })
       }

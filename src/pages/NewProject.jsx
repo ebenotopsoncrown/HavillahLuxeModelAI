@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, uploadFile } from '../lib/supabase'
 import { generateImage, lastProvider } from '../lib/fal'
-import { buildPrompt } from '../utils/promptBuilder'
+import { buildPrompt, buildBaseModelPrompt } from '../utils/promptBuilder'
 import { canGenerate, deductCredits } from '../lib/credits'
 import ClothingUploader from '../components/ClothingUploader'
 import ModelConfigPanel from '../components/ModelConfigPanel'
@@ -28,7 +28,7 @@ const BACKGROUNDS = [
 
 const DEFAULT_CONFIG = {
   gender: 'female',
-  age_range: '30-35',
+  age_range: '26-35',
   skin_tone: 'rich_cocoa',
   body_type: 'slim',
   hairstyle: 'afro',
@@ -88,14 +88,19 @@ export default function NewProject() {
       if (projErr) throw projErr
       setProgress(35)
 
-      const { prompt, negative_prompt } = buildPrompt({ ...config, pose, background })
+      const fullConfig = { ...config, pose, background }
+      const { prompt, negative_prompt } = buildPrompt(fullConfig)
+      const { prompt: baseModelPrompt } = buildBaseModelPrompt(fullConfig)
       setProgressMsg(`Building ${imageCount} AI model images...`)
 
       const generatedUrls = []
       for (let i = 0; i < imageCount; i++) {
         setProgressMsg(`Generating image ${i + 1} of ${imageCount}...`)
         setProgress(35 + ((i / imageCount) * 50))
-        const url = await generateImage(prompt, negative_prompt, uploadedUrls, preservationStrength)
+        const url = await generateImage(
+          prompt, negative_prompt, uploadedUrls, preservationStrength,
+          baseModelPrompt, config.garment_type
+        )
         if (url) generatedUrls.push({ url, prompt })
       }
 
