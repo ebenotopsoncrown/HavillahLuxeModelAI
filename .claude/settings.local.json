@@ -3,7 +3,22 @@
     "allow": [
       "PowerShell(npm install *)",
       "PowerShell(gh *)",
-      "PowerShell(vercel *)"
+      "PowerShell(vercel *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(npx supabase --version 2>&1 | Select-Object -First 3)",
+      "PowerShell(psql *)",
+      "PowerShell(supabase *)",
+      "PowerShell(node -e \"const https = require\\('https'\\); https.get\\('https://api.supabase.com/v1/projects', {headers:{Authorization:'Bearer test'}}, r => console.log\\('Supabase API reachable:', r.statusCode\\)\\).on\\('error', e => console.log\\('Error:', e.message\\)\\)\")",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Skill(vercel:deploy)",
+      "Bash(vercel *)",
+      "WebFetch(domain:havillah-luxemodel-ai.vercel.app)",
+      "Bash(start *)",
+      "Bash(curl *)",
+      "Bash(git fetch *)"
     ]
   }
 }
