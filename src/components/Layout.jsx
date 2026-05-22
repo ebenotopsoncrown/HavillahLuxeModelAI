@@ -16,19 +16,26 @@ const NAV_ITEMS = [
 ]
 
 function CreditDisplay({ profile }) {
+  const unlimited = profile?.unlimited || false
   const credits = profile?.credits ?? 0
-  const pct = Math.min(100, (credits / 100) * 100)
+  const pct = unlimited ? 100 : Math.min(100, (credits / 100) * 100)
   return (
     <div style={{ padding: '20px 20px 12px' }}>
       <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#444444', marginBottom: '10px' }}>
         Generation Credits
       </p>
-      <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '28px', fontWeight: 300, color: '#B8960C', lineHeight: 1, marginBottom: '12px' }}>
-        {credits}
+      <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '28px', fontWeight: 300, color: '#B8960C', lineHeight: 1, marginBottom: unlimited ? '6px' : '12px' }}>
+        {unlimited ? '∞' : credits}
       </p>
-      <div style={{ height: '2px', width: '100%', background: '#1A1A1A', borderRadius: '1px', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.5s ease' }} />
-      </div>
+      {unlimited ? (
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#B8960C', marginBottom: '6px' }}>
+          UNLIMITED
+        </div>
+      ) : (
+        <div style={{ height: '2px', width: '100%', background: '#1A1A1A', borderRadius: '1px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.5s ease' }} />
+        </div>
+      )}
     </div>
   )
 }

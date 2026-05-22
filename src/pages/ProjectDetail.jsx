@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { generateImage } from '../lib/fal'
 import { buildPrompt } from '../utils/promptBuilder'
+import { canGenerate, deductCredits } from '../lib/credits'
 import ListingGenerator from '../components/ListingGenerator'
 import ImageEditor from '../components/ImageEditor'
 import PublishToMarketplace from '../components/PublishToMarketplace'
@@ -81,7 +82,8 @@ export default function ProjectDetail() {
 
   async function generateMore() {
     if (!project) return
-    if ((profile?.credits || 0) < 1) { toast.error('Not enough credits'); return }
+    const allowed = await canGenerate(1)
+    if (!allowed) { toast.error('Not enough credits'); return }
     setGenerating(true)
     setGenProgress(10)
     try {
@@ -121,8 +123,8 @@ export default function ProjectDetail() {
 
         if (newImg) setImages(prev => [newImg, ...prev])
         await supabase.from('projects').update({ generation_count: images.length + 1 }).eq('id', project.id)
+        await deductCredits(1) // no-op for admin
         await supabase.from('users').update({
-          credits: Math.max(0, (profile?.credits || 0) - 1),
           total_generations: (profile?.total_generations || 0) + 1,
         }).eq('id', user.id)
         await refreshProfile()

@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { getUserCredits, isAdminUser } from './lib/credits'
+import { useEffect } from 'react'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import NewProject from './pages/NewProject'
@@ -31,6 +33,18 @@ function ProtectedRoute({ children }) {
 
 function AppRoutes() {
   const { user, loading } = useAuth()
+
+  useEffect(() => {
+    const debug = async () => {
+      const admin = await isAdminUser()
+      const creds = await getUserCredits()
+      console.log('=== CREDIT DEBUG ===')
+      console.log('Is Admin:', admin)
+      console.log('Credits:', creds)
+      console.log('===================')
+    }
+    debug()
+  }, [user])
 
   if (loading) {
     return (

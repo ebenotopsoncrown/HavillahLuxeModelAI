@@ -36,8 +36,9 @@ const PLANS = [
 
 export default function Credits() {
   const { profile, refreshProfile, user } = useAuth()
-  const credits = profile?.credits ?? 0
-  const pct = Math.min(100, (credits / 100) * 100)
+  const unlimited = profile?.unlimited || false
+  const credits = unlimited ? 0 : (profile?.credits ?? 0) // display-only; 0 not shown when unlimited
+  const pct = unlimited ? 100 : Math.min(100, (credits / 100) * 100)
 
   async function addDemoCredits() {
     const { error } = await supabase
@@ -75,12 +76,17 @@ export default function Credits() {
               <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6B6B6B', marginBottom: '12px' }}>
                 Current Balance
               </div>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '52px', fontWeight: 300, color: '#B8960C', lineHeight: 1, marginBottom: '20px' }}>
-                {credits}
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '52px', fontWeight: 300, color: '#B8960C', lineHeight: 1, marginBottom: unlimited ? '8px' : '20px' }}>
+                {unlimited ? '∞' : credits}
               </div>
+              {unlimited && (
+                <div style={{ display: 'inline-block', fontFamily: "'DM Sans', sans-serif", fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', padding: '3px 10px', borderRadius: '2px', border: '1px solid #B8960C', color: '#B8960C', marginBottom: '20px' }}>
+                  UNLIMITED — ADMIN
+                </div>
+              )}
               <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#6B6B6B' }}>Credits remaining</span>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#AAAAAA' }}>{credits} / 100</span>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#AAAAAA' }}>{unlimited ? '∞ / ∞' : `${credits} / 100`}</span>
               </div>
               <div style={{ height: '2px', background: '#E8E4DC', borderRadius: '1px', overflow: 'hidden', marginBottom: '24px' }}>
                 <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #B8960C, #DEC05A)', transition: 'width 0.5s ease' }} />

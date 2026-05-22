@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase, uploadFile } from '../lib/supabase'
 import { generateImage } from '../lib/fal'
 import { buildPrompt } from '../utils/promptBuilder'
+import { canGenerate, deductCredits } from '../lib/credits'
 import ClothingUploader from '../components/ClothingUploader'
 import ModelConfigPanel from '../components/ModelConfigPanel'
 import { Sparkles, Camera, Mountain, RotateCw } from 'lucide-react'
@@ -57,8 +58,9 @@ export default function NewProject() {
   async function handleGenerate() {
     if (!projectName.trim()) { toast.error('Please enter a project name'); return }
     if (files.length === 0) { toast.error('Please upload at least one garment photo'); return }
-    if ((profile?.credits || 0) < imageCount) {
-      toast.error(`Not enough credits. You need ${imageCount} but have ${profile?.credits || 0}`)
+    const allowed = await canGenerate(imageCount)
+    if (!allowed) {
+      toast.error(`Not enough credits. You need ${imageCount} to generate.`)
       return
     }
 
@@ -120,8 +122,8 @@ export default function NewProject() {
         generation_count: generatedUrls.length,
       }).eq('id', project.id)
 
+      await deductCredits(imageCount) // no-op for admin
       await supabase.from('users').update({
-        credits: Math.max(0, (profile?.credits || 0) - imageCount),
         total_generations: (profile?.total_generations || 0) + generatedUrls.length,
       }).eq('id', user.id)
       await refreshProfile()
@@ -301,7 +303,10 @@ export default function NewProject() {
               ))}
             </div>
             <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', color: '#6B6B6B', marginBottom: '20px' }}>
-              Costs {imageCount} credit{imageCount !== 1 ? 's' : ''} · {profile?.credits || 0} available
+              {profile?.unlimited
+                ? '∞ Unlimited credits · Admin'
+                : `Costs ${imageCount} credit${imageCount !== 1 ? 's' : ''} · ${profile?.credits || 0} available`
+              }
             </div>
             <GenerateButton onClick={handleGenerate} generating={generating} imageCount={imageCount} disabled={generating || files.length === 0 || !projectName.trim()} />
           </div>
