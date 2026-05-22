@@ -1,32 +1,47 @@
-const FAL_API_KEY = import.meta.env.VITE_FAL_API_KEY
+import { supabase } from './supabase'
+
+const TIMEOUT_MS = 90_000 // Pollinations can take up to 60s on first request
 
 export async function generateImage(prompt, negativePrompt, referenceImageUrls = []) {
-  const body = {
-    prompt,
-    image_size: 'portrait_4_3',
-    num_inference_steps: 28,
-    guidance_scale: 3.5,
-    num_images: 1,
-    enable_safety_checker: true,
-  }
-  if (referenceImageUrls.length > 0) {
-    body.image_url = referenceImageUrls[0]
+  const seed = Math.floor(Math.random() * 999999)
+
+  // Weave clothing context into the prompt so the model knows what to render
+  const fullPrompt = referenceImageUrls.length > 0
+    ? `${prompt}, wearing the exact garment style from the reference, high-end fashion photography`
+    : prompt
+
+  const url =
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}` +
+    `?width=768&height=1024&model=flux&seed=${seed}&nologo=true&enhance=true`
+
+  // Fetch with timeout
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  let response
+  try {
+    response = await fetch(url, { signal: controller.signal })
+  } catch (err) {
+    throw new Error(err.name === 'AbortError'
+      ? 'Image generation timed out — please try again'
+      : `Generation failed: ${err.message}`)
+  } finally {
+    clearTimeout(timer)
   }
 
-  const response = await fetch('https://fal.run/fal-ai/flux/dev', {
-    method: 'POST',
-    headers: {
-      Authorization: `Key ${FAL_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+  if (!response.ok) throw new Error(`Generation failed: ${response.status}`)
 
-  if (!response.ok) {
-    const err = await response.text()
-    throw new Error(`Fal.ai error: ${err}`)
-  }
+  const blob = await response.blob()
+  if (blob.size < 5000) throw new Error('Generated image too small — please try again')
 
-  const data = await response.json()
-  return data.images?.[0]?.url ?? null
+  // Upload to Supabase for a permanent URL
+  const fileName = `gen-${Date.now()}-${seed}.jpg`
+  const { error: uploadError } = await supabase.storage
+    .from('generated-images')
+    .upload(fileName, blob, { contentType: 'image/jpeg' })
+
+  if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`)
+
+  const { data } = supabase.storage.from('generated-images').getPublicUrl(fileName)
+  return data.publicUrl
 }
