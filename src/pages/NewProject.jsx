@@ -54,7 +54,12 @@ export default function NewProject() {
   const [progress, setProgress] = useState(0)
   const [progressMsg, setProgressMsg] = useState('')
   const [nameFocused, setNameFocused] = useState(false)
-  const [preservationStrength, setPreservationStrength] = useState(0.65)
+  const [preservationStrength, setPreservationStrength] = useState(0.55)
+  const [frontDesign, setFrontDesign] = useState('plain')
+  const [neckline, setNeckline] = useState('round')
+  const [sleeves, setSleeves] = useState('sleeveless')
+  const [pattern, setPattern] = useState('plain')
+  const [extraDetails, setExtraDetails] = useState('')
 
   async function handleGenerate() {
     if (!projectName.trim()) { toast.error('Please enter a project name'); return }
@@ -89,7 +94,15 @@ export default function NewProject() {
       setProgress(35)
 
       const fullConfig = { ...config, pose, background }
-      const { prompt, negative_prompt } = buildPrompt(fullConfig)
+      const garmentDescription = [
+        'EXACT GARMENT ATTRIBUTES (DO NOT DEVIATE):',
+        `- Front design: ${frontDesign}`,
+        `- Neckline: ${neckline}`,
+        `- Sleeves: ${sleeves}`,
+        `- Pattern/Print: ${pattern}`,
+        `- Extra details: ${extraDetails || 'none'}`,
+      ].join('\n')
+      const { prompt, negative_prompt } = buildPrompt(fullConfig, garmentDescription)
       const { prompt: baseModelPrompt } = buildBaseModelPrompt(fullConfig)
       setProgressMsg(`Building ${imageCount} AI model images...`)
 
@@ -228,6 +241,89 @@ export default function NewProject() {
             <ClothingUploader value={files} onChange={setFiles} maxFiles={4} />
           </div>
 
+          {/* Garment Attributes */}
+          <div style={{ background: '#FAFAF8', border: '1px solid rgba(184,150,12,0.3)', borderLeft: '3px solid #B8960C', borderRadius: '4px', padding: '24px' }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '6px' }}>
+              Garment Details
+            </div>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#6B6B6B', marginBottom: '20px', lineHeight: 1.5 }}>
+              Describe your garment so the AI preserves it exactly. This prevents AI from adding elements that don't exist on your garment.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3A3A3A', marginBottom: '6px' }}>Front Design</label>
+                <select value={frontDesign} onChange={e => setFrontDesign(e.target.value)} disabled={generating}
+                  style={{ width: '100%', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '10px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#0D0D0D', outline: 'none', cursor: generating ? 'not-allowed' : 'pointer' }}
+                  onFocus={e => e.target.style.borderColor = '#B8960C'}
+                  onBlur={e => e.target.style.borderColor = '#E8E4DC'}>
+                  <option value="plain">Plain (no buttons, no zip)</option>
+                  <option value="buttons">Has buttons</option>
+                  <option value="zip">Has zip/zipper</option>
+                  <option value="wrapped">Wrap style</option>
+                  <option value="tied">Tied / bow front</option>
+                  <option value="embroidered">Has embroidery</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3A3A3A', marginBottom: '6px' }}>Neckline</label>
+                <select value={neckline} onChange={e => setNeckline(e.target.value)} disabled={generating}
+                  style={{ width: '100%', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '10px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#0D0D0D', outline: 'none', cursor: generating ? 'not-allowed' : 'pointer' }}
+                  onFocus={e => e.target.style.borderColor = '#B8960C'}
+                  onBlur={e => e.target.style.borderColor = '#E8E4DC'}>
+                  <option value="round">Round neck</option>
+                  <option value="v_neck">V-neck</option>
+                  <option value="square">Square neck</option>
+                  <option value="high">High neck / Turtle neck</option>
+                  <option value="off_shoulder">Off shoulder</option>
+                  <option value="boat">Boat neck</option>
+                  <option value="halter">Halter neck</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3A3A3A', marginBottom: '6px' }}>Sleeves</label>
+                <select value={sleeves} onChange={e => setSleeves(e.target.value)} disabled={generating}
+                  style={{ width: '100%', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '10px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#0D0D0D', outline: 'none', cursor: generating ? 'not-allowed' : 'pointer' }}
+                  onFocus={e => e.target.style.borderColor = '#B8960C'}
+                  onBlur={e => e.target.style.borderColor = '#E8E4DC'}>
+                  <option value="sleeveless">Sleeveless</option>
+                  <option value="short">Short sleeves</option>
+                  <option value="three_quarter">3/4 sleeves</option>
+                  <option value="long">Long sleeves</option>
+                  <option value="puff">Puff sleeves</option>
+                  <option value="bell">Bell sleeves</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3A3A3A', marginBottom: '6px' }}>Pattern / Print</label>
+                <select value={pattern} onChange={e => setPattern(e.target.value)} disabled={generating}
+                  style={{ width: '100%', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '10px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#0D0D0D', outline: 'none', cursor: generating ? 'not-allowed' : 'pointer' }}
+                  onFocus={e => e.target.style.borderColor = '#B8960C'}
+                  onBlur={e => e.target.style.borderColor = '#E8E4DC'}>
+                  <option value="plain">Plain / Solid color</option>
+                  <option value="ankara">Ankara / African print</option>
+                  <option value="striped">Striped</option>
+                  <option value="floral">Floral print</option>
+                  <option value="geometric">Geometric pattern</option>
+                  <option value="lace">Lace fabric</option>
+                  <option value="sequined">Sequined / Beaded</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3A3A3A', marginBottom: '6px' }}>Extra Details</label>
+              <textarea
+                value={extraDetails}
+                onChange={e => setExtraDetails(e.target.value)}
+                disabled={generating}
+                placeholder="Describe any other important garment details (e.g. 'gold trim at hem', 'red belt included', 'open back design')"
+                rows={2}
+                style={{ width: '100%', background: '#FFFFFF', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '10px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#0D0D0D', resize: 'none', outline: 'none', lineHeight: 1.5 }}
+                onFocus={e => e.target.style.borderColor = '#B8960C'}
+                onBlur={e => e.target.style.borderColor = '#E8E4DC'}
+              />
+            </div>
+          </div>
+
           {/* Model Config */}
           <div>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -303,7 +399,7 @@ export default function NewProject() {
           {/* Garment Preservation Strength */}
           <div style={{ background: '#FAFAF8', border: '1px solid #E8E4DC', borderRadius: '4px', padding: '20px' }}>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#B8960C', marginBottom: '14px' }}>
-              Garment Preservation
+              Garment Preservation Strength
             </div>
             <input
               type="range"
@@ -316,15 +412,20 @@ export default function NewProject() {
               style={{ width: '100%', accentColor: '#B8960C', cursor: generating ? 'not-allowed' : 'pointer' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#AAAAAA' }}>Maximum</span>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: '#B8960C', fontWeight: 600 }}>
-                {preservationStrength <= 0.55 ? 'Maximum' : preservationStrength <= 0.70 ? 'Balanced' : 'Creative'}
-                {' '}({preservationStrength})
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#AAAAAA' }}>Max Preservation</span>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: preservationStrength > 0.70 ? '#E05C2A' : '#B8960C', fontWeight: 600 }}>
+                {preservationStrength <= 0.55 ? 'Maximum Preservation (Recommended)' : preservationStrength <= 0.70 ? 'Balanced' : 'Creative (May alter garment)'}
+                {' '}· {preservationStrength}
               </span>
               <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#AAAAAA' }}>Creative</span>
             </div>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#AAAAAA', marginTop: '8px', lineHeight: 1.5 }}>
-              Lower = garment preserved more strictly. Higher = model has more creative freedom.
+            {preservationStrength > 0.70 && (
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#E05C2A', marginTop: '8px', lineHeight: 1.5, fontWeight: 500 }}>
+                ⚠️ High values may alter garment details. Lower for better preservation.
+              </p>
+            )}
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#AAAAAA', marginTop: preservationStrength > 0.70 ? '4px' : '8px', lineHeight: 1.5 }}>
+              Lower = garment preserved more strictly. Default 0.55 recommended.
             </p>
           </div>
 

@@ -36,20 +36,26 @@ export default function ClothingUploader({ value = [], onChange, maxFiles = 4 })
         <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#B8960C', marginBottom: '8px' }}>
           Photo Tips for Best Garment Accuracy
         </p>
-        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '5px' }}>
           {[
-            'Use a flat-lay photo or photo on a plain hanger',
-            'Ensure the ENTIRE garment is visible in frame',
-            'Use good lighting — avoid harsh shadows',
-            'Plain or white background works best',
-            'Higher resolution = better garment preservation',
-          ].map(tip => (
-            <li key={tip} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#6B6B6B', display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
-              <span style={{ color: '#B8960C', flexShrink: 0 }}>—</span>
-              {tip}
+            { icon: '✅', text: 'Flat lay on WHITE background works best' },
+            { icon: '✅', text: 'Entire garment must be fully visible' },
+            { icon: '✅', text: 'Bright even lighting — avoid shadows' },
+            { icon: '✅', text: 'High resolution photo preferred' },
+            { icon: '✅', text: 'Front of garment facing camera' },
+            { icon: '❌', text: 'Avoid dark or busy backgrounds' },
+            { icon: '❌', text: 'Avoid wrinkled or bunched fabric' },
+            { icon: '❌', text: 'Avoid partial or cropped garment photos' },
+          ].map(({ icon, text }) => (
+            <li key={text} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#6B6B6B', display: 'flex', gap: '7px', alignItems: 'flex-start' }}>
+              <span style={{ flexShrink: 0 }}>{icon}</span>
+              {text}
             </li>
           ))}
         </ul>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#B8960C', marginTop: '10px', lineHeight: 1.5, fontWeight: 500 }}>
+          ⚠️ The AI preserves ONLY what it can see clearly. Better photo = better garment preservation.
+        </p>
       </div>
 
       {/* Drop zone */}

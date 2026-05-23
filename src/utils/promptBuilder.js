@@ -6,7 +6,7 @@ const AGE_GROUP_MAP = {
   // Teenagers
   teen_13_15: { desc: '14 year old teenager',  isChild: false, isTeen: true,  bodyDesc: null },
   teen_16_17: { desc: '17 year old teenager',  isChild: false, isTeen: true,  bodyDesc: null },
-  // Adults (new ranges)
+  // Adults
   '18-25':    { desc: '22 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '26-35':    { desc: '30 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '36-45':    { desc: '40 year old',           isChild: false, isTeen: false, bodyDesc: null },
@@ -57,11 +57,11 @@ const HAIRSTYLE_MAP = {
 }
 
 const MAKEUP_MAP = {
-  natural:   'natural glowing minimal makeup',
-  executive: 'polished executive professional makeup',
-  editorial: 'bold high fashion editorial makeup',
-  groomed:   'well groomed natural look',
-  bold_groom:'bold groomed distinguished look',
+  natural:    'natural glowing minimal makeup',
+  executive:  'polished executive professional makeup',
+  editorial:  'bold high fashion editorial makeup',
+  groomed:    'well groomed natural look',
+  bold_groom: 'bold groomed distinguished look',
 }
 
 const FACIAL_HAIR_MAP = {
@@ -118,57 +118,36 @@ function resolveGenderWord(gender, ageGroup) {
   return gender === 'male' ? 'man' : 'woman'
 }
 
-function resolveGrooming(gender, ageGroup, makeup_level, facial_hair) {
-  if (ageGroup.isChild || ageGroup.isTeen) return 'natural clean appearance, no makeup'
-  return gender === 'female'
-    ? (MAKEUP_MAP[makeup_level] || MAKEUP_MAP.natural)
-    : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
-}
-
-// ── buildBaseModelPrompt ───────────────────────────────────────────────────────
-// Used as Step 1 in the VTO pipeline: generates just the person + background.
+// ── buildBaseModelPrompt ──────────────────────────────────────────────────────
+// Step 1 of the VTO pipeline: generates a base person image.
 // Deliberately avoids garment description so FASHN can overlay the real garment.
 export function buildBaseModelPrompt(config) {
   const {
-    gender           = 'female',
-    age_range        = '26-35',
-    skin_tone        = 'rich_cocoa',
-    body_type        = 'slim',
-    hairstyle        = 'afro',
-    makeup_level     = 'natural',
-    facial_hair      = 'clean_shaven',
-    pose             = 'standing_power',
-    background       = 'studio_minimal',
+    gender       = 'female',
+    age_range    = '26-35',
+    skin_tone    = 'rich_cocoa',
+    body_type    = 'slim',
+    hairstyle    = 'afro',
+    makeup_level = 'natural',
+    facial_hair  = 'clean_shaven',
   } = config
 
   const ageGroup   = resolveAgeGroup(age_range)
   const genderWord = resolveGenderWord(gender, ageGroup)
-  const skinTone   = SKIN_TONE_MAP[skin_tone]   || SKIN_TONE_MAP.rich_cocoa
-  const bodyType   = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'elegant figure'
-  const hair       = HAIRSTYLE_MAP[hairstyle]   || 'natural hair'
-  const grooming   = resolveGrooming(gender, ageGroup, makeup_level, facial_hair)
-  const poseDesc   = POSE_MAP[pose]             || POSE_MAP.standing_power
-  const bgDesc     = BACKGROUND_MAP[background] || BACKGROUND_MAP.studio_minimal
-  const negPrompt  = ageGroup.isChild ? CHILD_NEGATIVE : NEGATIVE_PROMPT
+  const skin       = SKIN_TONE_MAP[skin_tone] || SKIN_TONE_MAP.rich_cocoa
+  const body       = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'model figure'
 
-  const prompt = [
-    `A ${ageGroup.desc} African ${genderWord},`,
-    `${skinTone},`,
-    `${bodyType},`,
-    `${hair},`,
-    `${grooming}.`,
-    `Wearing a simple plain neutral fitted white outfit.`,
-    `The model is ${poseDesc}.`,
-    `BACKGROUND: ${bgDesc}.`,
-    `PHOTOGRAPHY: ${QUALITY}`,
-    `Professional fashion model pose, full body visible.`,
-  ].join(' ')
+  const prompt =
+    `Professional fashion model, ${ageGroup.desc} African ${genderWord}, ` +
+    `${skin}, ${body}, wearing plain white fitted clothing, ` +
+    `neutral pose, white studio background, professional lighting, photorealistic`
 
-  return { prompt, negative_prompt: negPrompt }
+  return { prompt, negative_prompt: ageGroup.isChild ? CHILD_NEGATIVE : NEGATIVE_PROMPT }
 }
 
 // ── buildPrompt ───────────────────────────────────────────────────────────────
-// Full garment-preservation prompt used as img2img fallback.
+// Comprehensive garment-preservation prompt for img2img fallback.
+// Pass garment attribute description as customInstructions to prevent AI hallucination.
 export function buildPrompt(config, customInstructions) {
   const {
     gender              = 'female',
@@ -180,10 +159,6 @@ export function buildPrompt(config, customInstructions) {
     facial_hair         = 'clean_shaven',
     pose                = 'standing_power',
     background          = 'studio_minimal',
-    garment_type        = '',
-    garment_length      = '',
-    garment_fit         = '',
-    outfit_pieces       = '',
     custom_instructions = '',
   } = config
 
@@ -191,54 +166,183 @@ export function buildPrompt(config, customInstructions) {
 
   const ageGroup   = resolveAgeGroup(age_range)
   const genderWord = resolveGenderWord(gender, ageGroup)
-  const skinTone   = SKIN_TONE_MAP[skin_tone]   || SKIN_TONE_MAP.rich_cocoa
-  const bodyType   = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'elegant figure'
-  const hair       = HAIRSTYLE_MAP[hairstyle]   || 'natural hair'
-  const grooming   = resolveGrooming(gender, ageGroup, makeup_level, facial_hair)
-  const poseDesc   = POSE_MAP[pose]             || POSE_MAP.standing_power
-  const bgDesc     = BACKGROUND_MAP[background] || BACKGROUND_MAP.studio_minimal
-  const negPrompt  = ageGroup.isChild ? CHILD_NEGATIVE : NEGATIVE_PROMPT
 
-  const garmentDetails = [garment_type, garment_length, garment_fit, outfit_pieces]
-    .filter(Boolean).join(', ')
+  // Inline maps tuned for prompt clarity
+  const skinTones = {
+    deep_melanin:  'deep melanin dark skin, rich ebony complexion',
+    rich_cocoa:    'rich cocoa brown skin, warm mahogany undertones',
+    golden_bronze: 'golden bronze skin, warm caramel undertones',
+  }
+  const bodyTypes = {
+    female: {
+      slim:       'slim elegant model physique',
+      curvy:      'beautiful curvy hourglass figure',
+      athletic:   'toned athletic build',
+      royal_plus: 'full-figured commanding plus-size model',
+    },
+    male: {
+      slim:       'slim lean model build',
+      curvy:      'broad shouldered muscular frame',
+      athletic:   'athletic powerful physique',
+      royal_plus: 'large commanding powerful frame',
+    },
+  }
+  const hairstyles = {
+    afro:           'voluminous natural afro',
+    braided_crown:  'elegant braided crown updo',
+    sleek_bun:      'sleek polished bun',
+    luxury_waves:   'flowing luxury waves',
+    locs:           'beautiful styled locs',
+    cornrows:       'neat cornrows',
+    low_cut:        'clean low cut fade',
+    waves_360:      '360 waves groomed',
+    caesar_cut:     'sharp caesar cut',
+    dreadlocks_med: 'medium dreadlocks',
+    bald_fade:      'clean bald head',
+    tapered_fade:   'sharp tapered fade',
+  }
+  const makeupStyles = {
+    natural:    'natural glowing minimal makeup',
+    executive:  'polished professional makeup',
+    editorial:  'bold editorial makeup',
+    groomed:    'well groomed natural look',
+    bold_groom: 'bold distinguished groomed look',
+  }
+  const poses = {
+    standing_power: 'standing in a powerful confident pose',
+    royal_sitting:  'seated in a regal composed pose',
+    runway_walk:    'walking confidently on runway',
+    luxury_lounge:  'elegantly lounging in relaxed pose',
+    over_shoulder:  'looking over shoulder three-quarter turn',
+  }
+  const backgrounds = {
+    luxury_palace:  'inside a grand luxury palace with gold architecture',
+    modern_mansion: 'modern luxury mansion interior',
+    yacht_deck:     'on a luxury superyacht deck with ocean view',
+    studio_minimal: 'clean minimal professional photography studio',
+    desert_royalty: 'African desert landscape at golden sunset',
+  }
 
-  const garmentBlock = `CRITICAL GARMENT REQUIREMENTS — MUST FOLLOW EXACTLY:
-- Copy THE EXACT SAME garment from the reference image — pixel-perfect accuracy required
-- Preserve every single detail: exact colors, patterns, prints, fabric texture, sheen
-- Preserve exact garment style, cut, silhouette and design — do NOT simplify
-- Preserve ALL decorative elements: embroidery, buttons, zips, lace, prints, beadwork
-- DO NOT add any new element not present in the reference (no extra lines, dots, buttons, stitching)
-- DO NOT remove any element present in the reference
-- The clothing must be IDENTICAL to the reference image — no artistic interpretation
-- ONLY the model's face/body, pose, and background should differ from the reference`
+  const skin     = skinTones[skin_tone]                                   || 'beautiful brown skin'
+  const body     = ageGroup.bodyDesc || bodyTypes[gender]?.[body_type]    || 'elegant figure'
+  const hair     = hairstyles[hairstyle]                                  || 'natural hair'
+  const grooming = (ageGroup.isChild || ageGroup.isTeen)
+    ? 'natural clean appearance, no makeup'
+    : gender === 'female'
+      ? (makeupStyles[makeup_level] || makeupStyles.natural)
+      : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
+  const poseDesc = poses[pose]                                            || 'standing confidently'
+  const bgDesc   = backgrounds[background]                                || 'studio background'
 
+  // ── ABSOLUTE GARMENT RULES ────────────────────────────────────────────────
+  const absoluteRules = `[ABSOLUTE MANDATORY RULES - NEVER VIOLATE]:
+
+RULE 1 - ZERO ADDITIONS:
+Do NOT add ANY feature, detail, or element to the garment that is not clearly visible in the reference image. This includes:
+- NO buttons unless buttons are on the original
+- NO zips unless zip is on the original
+- NO pockets unless pockets are on the original
+- NO belts unless belt is on the original
+- NO embroidery unless embroidery is on the original
+- NO lace unless lace is on the original
+- NO ruffles unless ruffles are on the original
+- NO collar unless collar is on the original
+- NO sleeves modification
+- NO neckline modification
+- NO length modification
+- NO pattern addition
+- NO print addition
+- NO color addition or change
+- NO texture change
+- NO fabric change
+
+RULE 2 - ZERO REMOVALS:
+Do NOT remove ANY feature visible on the original garment. Every visible element must appear in the output.
+
+RULE 3 - EXACT REPLICATION:
+The garment in the output must be a photographic reproduction of the garment in the reference image. Ask yourself: "If I covered the model and only showed the garment, would it be identical to the reference?" If NO — regenerate until YES.
+
+RULE 4 - SELF VERIFICATION:
+Before finalizing the image, mentally compare:
+- Original garment color vs Output garment color: MATCH?
+- Original front design vs Output front design: MATCH?
+- Original neckline vs Output neckline: MATCH?
+- Original sleeve style vs Output sleeve style: MATCH?
+- Original length vs Output length: MATCH?
+- Original patterns/prints vs Output patterns: MATCH?
+- Original embellishments vs Output embellishments: MATCH?
+- Any extra elements in output not in original? NONE?
+If ANY mismatch — reject.`
+
+  // ── GARMENT ANALYSIS STEP ────────────────────────────────────────────────
+  const garmentAnalysis = `STEP 1 - ANALYZE THE REFERENCE GARMENT:
+Carefully examine every detail of the garment in the reference image:
+- What TYPE of garment is it exactly?
+- What COLOR(S) does it have exactly?
+- What PATTERN or PRINT does it have? (plain/striped/print)
+- What NECKLINE style? (round/v-neck/square/etc)
+- What SLEEVE style? (sleeveless/short/long/etc)
+- What LENGTH? (crop/knee/midi/maxi/floor)
+- What FRONT DESIGN? (plain/button/zip/wrapped/etc)
+- What EMBELLISHMENTS? (none/embroidery/beading/etc)
+- What FABRIC texture? (smooth/textured/shiny/matte)
+
+STEP 2 - LOCK THESE ATTRIBUTES:
+Every attribute identified above is LOCKED. None can be changed, added to, or removed from.`
+
+  // ── CUSTOM / GARMENT ATTRIBUTES ──────────────────────────────────────────
   const customBlock = instructions
-    ? `\nADDITIONAL INSTRUCTIONS (HIGH PRIORITY): ${instructions}\n`
+    ? `\n[ADDITIONAL INSTRUCTIONS - HIGH PRIORITY]:\n${instructions}\n`
     : ''
 
-  const garmentDescBlock = garmentDetails
-    ? `GARMENT DESCRIPTION (reference only): ${garmentDetails}.`
-    : ''
+  // ── PHOTOGRAPHY QUALITY ──────────────────────────────────────────────────
+  const quality = [
+    'ultra-photorealistic professional fashion photography',
+    'shot on Phase One IQ4 150MP medium format camera',
+    '8K resolution crisp sharp focus throughout',
+    'perfect professional fashion lighting setup',
+    'Vogue Italia magazine editorial quality',
+    'award winning fashion photography',
+    'flawless skin texture and detail',
+    'perfect color accuracy and reproduction',
+  ].join(', ')
 
-  const modelBlock =
-    `NEW MODEL: A ${ageGroup.desc} African ${genderWord}, ` +
-    `${skinTone}, ${bodyType}, ${hair}, ${grooming}.`
+  // ── COMPREHENSIVE NEGATIVE PROMPT ────────────────────────────────────────
+  const negative_prompt = [
+    'buttons added', 'buttons not in original', 'zip added', 'pockets added',
+    'belt added', 'collar added', 'different neckline', 'modified neckline',
+    'different sleeves', 'modified sleeves', 'extra embroidery', 'added embellishments',
+    'extra decoration', 'modified pattern', 'different pattern', 'extra print',
+    'different color', 'color change', 'additional design elements', 'modified garment',
+    'different garment', 'wrong clothes', 'altered clothing', 'garment modifications',
+    'extra details on clothing', 'hallucinated garment features',
+    'cartoon', 'anime', 'illustration', 'painting',
+    'blurry', 'low quality', 'distorted', 'watermark', 'text overlay', 'logo',
+    'extra limbs', 'wrong anatomy', 'deformed face', 'bad hands',
+    'missing limbs', 'floating objects', 'duplicate', 'artifact', 'noise', 'grain',
+    ...(ageGroup.isChild ? ['adult content', 'revealing clothing', 'inappropriate', 'sexual', 'explicit'] : []),
+  ].join(', ')
 
-  const sceneBlock =
-    `POSE: The model is ${poseDesc}. ` +
-    `BACKGROUND: ${bgDesc} — COMPLETELY DIFFERENT from the reference image background.`
+  // ── FINAL PROMPT ─────────────────────────────────────────────────────────
+  const prompt = `${absoluteRules}
 
-  const prompt = [
-    garmentBlock,
-    customBlock,
-    garmentDescBlock,
-    modelBlock,
-    sceneBlock,
-    `PHOTOGRAPHY: ${QUALITY}`,
-    'FINAL CHECK: The garment is IDENTICAL to the reference — same colors, same pattern, same design. Zero modifications.',
-  ].filter(Boolean).join('\n')
+${garmentAnalysis}
+${customBlock}
+STEP 3 - GENERATE NEW MODEL IMAGE:
+Create a professional fashion photograph showing:
 
-  return { prompt, negative_prompt: negPrompt }
+MODEL: A ${ageGroup.desc} African ${genderWord} with ${skin}, ${body}, ${hair}, ${grooming}.
+
+POSE: ${poseDesc}.
+BACKGROUND: ${bgDesc}.
+
+GARMENT: THE EXACT SAME garment from the reference image — every color, every pattern, every design element preserved with 100% accuracy. No additions, no removals, no modifications whatsoever.
+
+PHOTOGRAPHY: ${quality}
+
+FINAL CHECK: Before completing, verify the garment in this output is IDENTICAL to the reference image. Any discrepancy = reject and regenerate.`
+
+  return { prompt, negative_prompt }
 }
 
 // Named re-exports for any component that imports the maps directly

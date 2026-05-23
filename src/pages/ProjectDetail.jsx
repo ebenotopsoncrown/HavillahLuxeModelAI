@@ -14,7 +14,7 @@ import { Progress } from '../components/ui/progress'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog'
 import {
   Download, Star, Trash2, Sparkles, Edit2, RotateCw,
-  Image, ArrowLeft, DownloadCloud, ShoppingBag,
+  Image, ArrowLeft, DownloadCloud, ShoppingBag, Columns,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '../lib/utils'
@@ -32,6 +32,7 @@ export default function ProjectDetail() {
   const [editImg, setEditImg] = useState(null)
   const [selectedImg, setSelectedImg] = useState(null)
   const [showPublish, setShowPublish] = useState(false)
+  const [comparisonImg, setComparisonImg] = useState(null)
 
   useEffect(() => {
     if (projectId && user) loadProject()
@@ -285,6 +286,13 @@ export default function ProjectDetail() {
                       <Download size={12} />
                     </button>
                     <button
+                      onClick={() => setComparisonImg(img)}
+                      className="w-7 h-7 rounded-lg bg-black/60 text-[#F8F5F0] hover:bg-[#C6A052] hover:text-[#0D0D0D] flex items-center justify-center transition-colors"
+                      title="Compare with original"
+                    >
+                      <Columns size={12} />
+                    </button>
+                    <button
                       onClick={() => setEditImg(img)}
                       className="w-7 h-7 rounded-lg bg-black/60 text-[#F8F5F0] hover:bg-[#C6A052] hover:text-[#0D0D0D] flex items-center justify-center transition-colors"
                     >
@@ -331,6 +339,45 @@ export default function ProjectDetail() {
           </DialogHeader>
           {editImg && (
             <ImageEditor imageUrl={editImg.image_url} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Compare with original dialog */}
+      <Dialog open={!!comparisonImg} onOpenChange={() => setComparisonImg(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C6A052' }}>
+              Compare with Original Garment
+            </DialogTitle>
+          </DialogHeader>
+          {comparisonImg && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
+              <div>
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#C6A052', marginBottom: '8px', textAlign: 'center' }}>
+                  Original Garment
+                </p>
+                <div style={{ border: '1px solid #2A2A2A', borderRadius: '8px', overflow: 'hidden', background: '#0D0D0D' }}>
+                  <img
+                    src={(project.clothing_image_urls || [])[0]}
+                    alt="Original garment"
+                    style={{ width: '100%', height: '400px', objectFit: 'contain' }}
+                  />
+                </div>
+              </div>
+              <div>
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#C6A052', marginBottom: '8px', textAlign: 'center' }}>
+                  Generated Image
+                </p>
+                <div style={{ border: '1px solid #2A2A2A', borderRadius: '8px', overflow: 'hidden', background: '#0D0D0D' }}>
+                  <img
+                    src={comparisonImg.image_url}
+                    alt="Generated"
+                    style={{ width: '100%', height: '400px', objectFit: 'contain' }}
+                  />
+                </div>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
