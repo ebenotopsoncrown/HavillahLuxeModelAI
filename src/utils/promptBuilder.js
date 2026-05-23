@@ -81,11 +81,17 @@ export const POSE_MAP = {
 }
 
 export const BACKGROUND_MAP = {
-  luxury_palace:  'inside a grand luxury palace with ornate gold architecture',
-  modern_mansion: 'modern luxury mansion interior, minimalist expensive decor',
-  yacht_deck:     'on the deck of a luxury superyacht with ocean backdrop',
-  studio_minimal: 'clean professional photography studio, seamless backdrop',
-  desert_royalty: 'African desert landscape, golden sand dunes at sunset',
+  luxury_palace:    'inside a grand opulent palace with ornate gold pillars and arches, marble floors with gold inlay, crystal chandeliers overhead, rich royal red and gold decor, royal throne room atmosphere, dramatic palace lighting',
+  modern_mansion:   'ultra-modern luxury mansion with floor-to-ceiling glass windows, minimalist white and marble interior, expensive contemporary furniture, designer art on walls, soft natural light flooding in, Beverly Hills mansion aesthetic',
+  yacht_deck:       'on the deck of a mega superyacht with crystal blue ocean stretching to the horizon, gleaming white yacht surfaces, Mediterranean sea backdrop, golden hour sunlight shimmering on water, luxury nautical setting',
+  studio_minimal:   'seamless pure white professional photography studio, perfect high-key studio lighting setup, clean minimal white background, fashion photography studio, meticulously lit editorial environment',
+  desert_royalty:   'vast golden African desert landscape with dramatic sand dunes at sunset, deep orange and purple sky, golden hour magical lighting, ancient Sahara atmosphere, cinematic desert scene',
+  city_rooftop:     'luxury rooftop in London city at night with dramatic sparkling city skyline, upscale urban rooftop setting, metropolitan luxury atmosphere, glittering city lights stretching to the horizon',
+  tropical_paradise:'luxury tropical Caribbean beach resort with crystal clear turquoise water, pristine white sand beach, swaying palm trees, golden sunset over the ocean, paradise island setting',
+  fashion_week:     'Paris Fashion Week runway backstage, elegant couture fashion show setting, dramatic editorial lighting, glamorous high fashion atelier atmosphere, Parisian chic',
+  african_village:  'beautiful traditional African village with vibrant colorful surroundings, lush baobab trees, warm golden afternoon light, rich authentic cultural setting, serene natural beauty',
+  luxury_hotel:     'grand 5-star luxury hotel lobby with towering marble columns, opulent crystal chandeliers, gold and ivory decor, lavish high-end interior design, palatial elegance',
+  garden_paradise:  'stunning English country garden in full bloom with lush roses and greenery in every direction, romantic soft natural light filtering through, fairytale garden setting, petals on the breeze',
 }
 
 const QUALITY =
@@ -96,12 +102,17 @@ const QUALITY =
   'award-winning fashion photography'
 
 export const NEGATIVE_PROMPT =
+  'buttons, button front, button down, zipper, zip, zip front, pocket, pockets, ' +
+  'collar, shirt collar, lapel, belt, waistband belt, bow, ribbon, ruffles, frills, ' +
+  'lace trim, lace overlay, extra embroidery, beading, sequins, added pattern, extra print, ' +
+  'extra decoration, modified garment, different garment, wrong clothes, ' +
   'different clothes, changed garment, modified clothing, added details, extra embellishments, ' +
   'wrong fabric, wrong pattern, wrong color scheme, different design, altered dress, new outfit, ' +
-  'added buttons, added lines, added dots, added decorations, added embroidery, ' +
+  'added buttons, added lines, added dots, added decorations, ' +
   'cartoon, anime, illustration, painting, 3D render, ' +
   'blurry, low quality, distorted, watermark, text, logo, ' +
-  'extra limbs, wrong anatomy, deformed face, nudity'
+  'extra limbs, wrong anatomy, deformed face, nudity, ' +
+  'background from original photo, original photo background, same background as reference image'
 
 const CHILD_NEGATIVE =
   'adult content, revealing clothing, inappropriate, sexual, explicit, ' +
@@ -130,17 +141,58 @@ export function buildBaseModelPrompt(config) {
     hairstyle    = 'afro',
     makeup_level = 'natural',
     facial_hair  = 'clean_shaven',
+    pose         = 'standing_power',
+    background   = 'studio_minimal',
   } = config
 
   const ageGroup   = resolveAgeGroup(age_range)
   const genderWord = resolveGenderWord(gender, ageGroup)
   const skin       = SKIN_TONE_MAP[skin_tone] || SKIN_TONE_MAP.rich_cocoa
   const body       = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'model figure'
+  const hair       = HAIRSTYLE_MAP[hairstyle] || 'beautiful natural hair'
+  const poseDesc   = POSE_MAP[pose] || 'standing confidently'
+  const bgDesc     = BACKGROUND_MAP[background] || BACKGROUND_MAP.studio_minimal
 
-  const prompt =
-    `Professional fashion model, ${ageGroup.desc} African ${genderWord}, ` +
-    `${skin}, ${body}, wearing plain white fitted clothing, ` +
-    `neutral pose, white studio background, professional lighting, photorealistic`
+  const makeupBeauty = {
+    natural:    'natural dewy glowing skin, fresh and youthful, long lashes, defined brows, glossy lips, radiant highlight',
+    executive:  'polished flawless power beauty look, professional executive makeup, defined features',
+    editorial:  'fierce stunning editorial beauty, bold dramatic high fashion makeup',
+    groomed:    'well groomed natural masculine look',
+    bold_groom: 'bold distinguished groomed look, sharp features',
+  }
+
+  const grooming = (ageGroup.isChild || ageGroup.isTeen)
+    ? 'natural clean appearance, no makeup'
+    : gender === 'female'
+      ? (makeupBeauty[makeup_level] || makeupBeauty.natural)
+      : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
+
+  const beautyDesc = [
+    'bright warm genuine smile',
+    'sparkling confident eyes',
+    'radiant glowing skin',
+    'magnetic beautiful presence',
+    'cheerful joyful expression',
+    'gorgeous attractive features',
+    'high fashion supermodel energy',
+    'confident charismatic presence',
+  ].join(', ')
+
+  const prompt = [
+    'Professional high fashion editorial photograph.',
+    `Stunning ${ageGroup.desc} African ${genderWord},`,
+    `${skin}, ${body},`,
+    `${hair},`,
+    `${grooming},`,
+    `${poseDesc},`,
+    `${beautyDesc},`,
+    'wearing plain white neutral outfit,',
+    `SETTING: ${bgDesc}.`,
+    'Shot on Hasselblad H6D-100c medium format, 85mm portrait lens, f/2.8 aperture,',
+    'perfect three-point studio lighting with rim light, ultra-sharp focus on face,',
+    '8K resolution, Vogue Italia editorial style, award-winning fashion photography.',
+    'MOOD: Joyful, confident, radiant, luxurious.',
+  ].join(' ')
 
   return { prompt, negative_prompt: ageGroup.isChild ? CHILD_NEGATIVE : NEGATIVE_PROMPT }
 }
@@ -202,9 +254,9 @@ export function buildPrompt(config, customInstructions) {
     tapered_fade:   'sharp tapered fade',
   }
   const makeupStyles = {
-    natural:    'natural glowing minimal makeup',
-    executive:  'polished professional makeup',
-    editorial:  'bold editorial makeup',
+    natural:    'natural dewy glowing skin, fresh and youthful, long lashes, defined brows, glossy lips, radiant highlight',
+    executive:  'polished flawless power beauty look, professional executive makeup, defined features',
+    editorial:  'fierce stunning editorial beauty, bold dramatic high fashion makeup',
     groomed:    'well groomed natural look',
     bold_groom: 'bold distinguished groomed look',
   }
@@ -214,13 +266,6 @@ export function buildPrompt(config, customInstructions) {
     runway_walk:    'walking confidently on runway',
     luxury_lounge:  'elegantly lounging in relaxed pose',
     over_shoulder:  'looking over shoulder three-quarter turn',
-  }
-  const backgrounds = {
-    luxury_palace:  'inside a grand luxury palace with gold architecture',
-    modern_mansion: 'modern luxury mansion interior',
-    yacht_deck:     'on a luxury superyacht deck with ocean view',
-    studio_minimal: 'clean minimal professional photography studio',
-    desert_royalty: 'African desert landscape at golden sunset',
   }
 
   const skin     = skinTones[skin_tone]                                   || 'beautiful brown skin'
@@ -232,7 +277,7 @@ export function buildPrompt(config, customInstructions) {
       ? (makeupStyles[makeup_level] || makeupStyles.natural)
       : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
   const poseDesc = poses[pose]                                            || 'standing confidently'
-  const bgDesc   = backgrounds[background]                                || 'studio background'
+  const bgDesc   = BACKGROUND_MAP[background]                             || BACKGROUND_MAP.studio_minimal
 
   // ── ABSOLUTE GARMENT RULES ────────────────────────────────────────────────
   const absoluteRules = `[ABSOLUTE MANDATORY RULES - NEVER VIOLATE]:
@@ -331,7 +376,7 @@ ${customBlock}
 STEP 3 - GENERATE NEW MODEL IMAGE:
 Create a professional fashion photograph showing:
 
-MODEL: A ${ageGroup.desc} African ${genderWord} with ${skin}, ${body}, ${hair}, ${grooming}.
+MODEL: A ${ageGroup.desc} African ${genderWord} with ${skin}, ${body}, ${hair}, ${grooming}, bright warm genuine smile, sparkling confident eyes, radiant glowing skin, magnetic beautiful presence, cheerful joyful expression, gorgeous attractive features, high fashion supermodel energy.
 
 POSE: ${poseDesc}.
 BACKGROUND: ${bgDesc}.

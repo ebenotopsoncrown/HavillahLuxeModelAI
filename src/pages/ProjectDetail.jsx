@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { generateImage, lastProvider } from '../lib/fal'
-import { buildPrompt, buildBaseModelPrompt } from '../utils/promptBuilder'
+import { buildPrompt, buildBaseModelPrompt, BACKGROUND_MAP } from '../utils/promptBuilder'
 import { canGenerate, deductCredits } from '../lib/credits'
 import ListingGenerator from '../components/ListingGenerator'
 import ImageEditor from '../components/ImageEditor'
@@ -19,6 +19,32 @@ import {
 import { toast } from 'sonner'
 import { cn } from '../lib/utils'
 
+const REGEN_ISSUES = [
+  { key: 'buttons_zip',         label: 'Added buttons/zip not in original' },
+  { key: 'wrong_background',    label: 'Wrong background used' },
+  { key: 'wrong_color',         label: 'Wrong garment color' },
+  { key: 'unattractive',        label: "Model doesn't look attractive enough" },
+  { key: 'wrong_pattern',       label: 'Pattern/print is wrong' },
+  { key: 'wrong_embellishments',label: 'Added embellishments not in original' },
+  { key: 'wrong_style',         label: 'Wrong garment style/cut' },
+  { key: 'poor_quality',        label: 'Poor image quality' },
+]
+
+function buildIssuePrompts(issues, background) {
+  const bgDesc = BACKGROUND_MAP[background] || 'the selected background setting'
+  const map = {
+    buttons_zip:          'absolutely no buttons, no zip, no fasteners, plain front only, no added closures',
+    wrong_background:     `MUST use ONLY this setting as background: ${bgDesc}. Completely ignore any background from the reference garment image`,
+    wrong_color:          'preserve exact original garment color with 100% precision, no color changes whatsoever',
+    unattractive:         'extremely beautiful attractive model, stunning gorgeous face, radiant bright warm smile, bright sparkling eyes, high fashion supermodel beauty, flawless skin, magnetic presence',
+    wrong_pattern:        'preserve exact original pattern and print with 100% precision, no pattern modification',
+    wrong_embellishments: 'no extra embellishments whatsoever, no added decoration, exactly as shown in original garment photo',
+    wrong_style:          'preserve exact garment cut and silhouette precisely as shown in original photo',
+    poor_quality:         'ultra high quality 8K resolution, tack-sharp focus, professional studio lighting, flawless detail',
+  }
+  return issues.map(k => map[k]).filter(Boolean).join('. ')
+}
+
 export default function ProjectDetail() {
   const [params] = useSearchParams()
   const projectId = params.get('id')
@@ -33,6 +59,10 @@ export default function ProjectDetail() {
   const [selectedImg, setSelectedImg] = useState(null)
   const [showPublish, setShowPublish] = useState(false)
   const [comparisonImg, setComparisonImg] = useState(null)
+  const [regenImg, setRegenImg] = useState(null)
+  const [selectedIssues, setSelectedIssues] = useState([])
+  const [regenInstructions, setRegenInstructions] = useState('')
+  const [regenerating, setRegenerating] = useState(false)
 
   useEffect(() => {
     if (projectId && user) loadProject()
@@ -144,6 +174,67 @@ export default function ProjectDetail() {
     } finally {
       setGenerating(false)
       setGenProgress(0)
+    }
+  }
+
+  async function regenerateWithFeedback() {
+    if (!regenImg || !project) return
+    const allowed = await canGenerate(1)
+    if (!allowed) { toast.error('Not enough credits'); return }
+    setRegenerating(true)
+    try {
+      const issuePrompts = buildIssuePrompts(selectedIssues, project.background)
+      const enhancedInstructions = [issuePrompts, regenInstructions].filter(Boolean).join('. ')
+
+      const projectConfig = {
+        gender: project.gender,
+        age_range: project.age_range,
+        skin_tone: project.skin_tone,
+        body_type: project.body_type,
+        hairstyle: project.hairstyle,
+        makeup_level: project.makeup_level,
+        facial_hair: project.facial_hair,
+        garment_type: project.garment_type,
+        pose: project.pose,
+        background: project.background,
+      }
+      const { prompt, negative_prompt } = buildPrompt(projectConfig, enhancedInstructions)
+      const { prompt: baseModelPrompt } = buildBaseModelPrompt(projectConfig)
+
+      const url = await generateImage(
+        prompt, negative_prompt, project.clothing_image_urls || [], 0.55,
+        baseModelPrompt, project.garment_type
+      )
+
+      if (url) {
+        const { data: newImg } = await supabase.from('generated_images').insert({
+          project_id: project.id,
+          user_id: user.id,
+          image_url: url,
+          prompt_used: prompt,
+          pose: project.pose,
+          background: project.background,
+          age_range: project.age_range,
+          skin_tone: project.skin_tone,
+          is_favorite: false,
+        }).select().single()
+
+        if (newImg) setImages(prev => [newImg, ...prev])
+        await supabase.from('projects').update({ generation_count: images.length + 1 }).eq('id', project.id)
+        await deductCredits(1)
+        await supabase.from('users').update({
+          total_generations: (profile?.total_generations || 0) + 1,
+        }).eq('id', user.id)
+        await refreshProfile()
+        toast.success('Image regenerated with your feedback!')
+        setRegenImg(null)
+        setSelectedIssues([])
+        setRegenInstructions('')
+      }
+    } catch (err) {
+      toast.error('Regeneration failed: ' + err.message)
+    } finally {
+      setRegenerating(false)
     }
   }
 
@@ -293,6 +384,13 @@ export default function ProjectDetail() {
                       <Columns size={12} />
                     </button>
                     <button
+                      onClick={() => { setRegenImg(img); setSelectedIssues([]); setRegenInstructions('') }}
+                      className="w-7 h-7 rounded-lg bg-black/60 text-[#F8F5F0] hover:bg-[#C6A052] hover:text-[#0D0D0D] flex items-center justify-center transition-colors"
+                      title="Regenerate with feedback"
+                    >
+                      <RotateCw size={12} />
+                    </button>
+                    <button
                       onClick={() => setEditImg(img)}
                       className="w-7 h-7 rounded-lg bg-black/60 text-[#F8F5F0] hover:bg-[#C6A052] hover:text-[#0D0D0D] flex items-center justify-center transition-colors"
                     >
@@ -379,6 +477,81 @@ export default function ProjectDetail() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Regenerate with Feedback modal */}
+      <Dialog open={!!regenImg} onOpenChange={() => { setRegenImg(null); setSelectedIssues([]); setRegenInstructions('') }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C6A052' }}>
+              Regenerate Image
+            </DialogTitle>
+          </DialogHeader>
+          <div style={{ marginTop: '8px' }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '12px', color: '#F8F5F0', marginBottom: '16px', lineHeight: 1.6 }}>
+              What was wrong with this image? (Select all that apply)
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+              {REGEN_ISSUES.map(issue => (
+                <label key={issue.key} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIssues.includes(issue.key)}
+                    onChange={() => setSelectedIssues(prev =>
+                      prev.includes(issue.key)
+                        ? prev.filter(k => k !== issue.key)
+                        : [...prev, issue.key]
+                    )}
+                    style={{ width: '16px', height: '16px', accentColor: '#C6A052', flexShrink: 0 }}
+                  />
+                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#F8F5F0', lineHeight: 1.4 }}>
+                    {issue.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#C6A052', marginBottom: '8px' }}>
+                Additional Instructions
+              </label>
+              <textarea
+                value={regenInstructions}
+                onChange={e => setRegenInstructions(e.target.value)}
+                placeholder="Describe exactly what to fix..."
+                rows={3}
+                style={{ width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: '6px', padding: '10px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', color: '#F8F5F0', resize: 'none', outline: 'none', lineHeight: 1.5 }}
+                onFocus={e => e.target.style.borderColor = '#C6A052'}
+                onBlur={e => e.target.style.borderColor = '#2A2A2A'}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setRegenImg(null); setSelectedIssues([]); setRegenInstructions('') }}
+                disabled={regenerating}
+              >
+                Cancel
+              </Button>
+              <button
+                onClick={regenerateWithFeedback}
+                disabled={regenerating}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: regenerating ? 'rgba(198,160,82,0.4)' : 'linear-gradient(135deg, #B8960C, #DEC05A)',
+                  border: 'none', borderRadius: 6, padding: '6px 16px',
+                  fontSize: 12, fontWeight: 600, letterSpacing: '0.06em',
+                  color: '#0D0D0D', cursor: regenerating ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                {regenerating
+                  ? <><RotateCw size={12} className="animate-spin" /> Regenerating...</>
+                  : <><RotateCw size={12} /> Regenerate</>
+                }
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

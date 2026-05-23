@@ -19,11 +19,17 @@ const POSES = [
 ]
 
 const BACKGROUNDS = [
-  { key: 'luxury_palace', label: 'Palace', icon: '🏛️' },
-  { key: 'modern_mansion', label: 'Mansion', icon: '🏠' },
-  { key: 'yacht_deck', label: 'Yacht', icon: '⛵' },
-  { key: 'studio_minimal', label: 'Studio', icon: '📸' },
-  { key: 'desert_royalty', label: 'Desert', icon: '🏜️' },
+  { key: 'luxury_palace',    label: 'Palace',       icon: '🏛️' },
+  { key: 'modern_mansion',   label: 'Mansion',      icon: '🏠' },
+  { key: 'yacht_deck',       label: 'Yacht',        icon: '⛵' },
+  { key: 'studio_minimal',   label: 'Studio',       icon: '📸' },
+  { key: 'desert_royalty',   label: 'Desert',       icon: '🏜️' },
+  { key: 'city_rooftop',     label: 'City Rooftop', icon: '🌆' },
+  { key: 'tropical_paradise',label: 'Tropical',     icon: '🌴' },
+  { key: 'fashion_week',     label: 'Fashion Week', icon: '👗' },
+  { key: 'african_village',  label: 'Village',      icon: '🌍' },
+  { key: 'luxury_hotel',     label: 'Hotel Lobby',  icon: '🏨' },
+  { key: 'garden_paradise',  label: 'Garden',       icon: '🌸' },
 ]
 
 const DEFAULT_CONFIG = {
@@ -365,7 +371,7 @@ export default function NewProject() {
               Background
               <div style={{ flex: 1, height: '1px', background: '#E8E4DC' }} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
               {BACKGROUNDS.map(b => (
                 <SceneOption
                   key={b.key}
