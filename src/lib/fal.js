@@ -250,6 +250,7 @@ export async function generateImage(
   baseModelPrompt = null,
   garmentType = '',
   onProgress = null,
+  baseNegativePrompt = null,
 ) {
   const seed = Math.floor(Math.random() * 999999)
   const referenceUrl = referenceImageUrls[0] || null
@@ -265,7 +266,10 @@ export async function generateImage(
   if (referenceUrl && baseModelPrompt) {
     try {
       progress('Step 1 of 2 — Generating your African model...')
-      const baseModelUrl = await generateBaseModel(baseModelPrompt, negativePrompt)
+      // Use the model-specific negative prompt (with gender enforcement) if provided
+      const step1NegativePrompt = baseNegativePrompt || negativePrompt
+      console.log('[generateImage] Step 1 negative prompt:', step1NegativePrompt)
+      const baseModelUrl = await generateBaseModel(baseModelPrompt, step1NegativePrompt)
 
       progress('Step 2 of 2 — Applying your exact garment...')
       const category = getVTOCategory(garmentType)

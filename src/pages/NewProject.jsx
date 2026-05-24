@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, uploadFile } from '../lib/supabase'
 import { generateImage, lastProvider } from '../lib/fal'
-import { buildPrompt, buildBaseModelPrompt } from '../utils/promptBuilder'
+import { buildPrompt, buildBaseModelPrompt, validateConfig } from '../utils/promptBuilder'
 import { canGenerate, deductCredits } from '../lib/credits'
 import ClothingUploader from '../components/ClothingUploader'
 import ModelConfigPanel from '../components/ModelConfigPanel'
@@ -100,6 +100,20 @@ export default function NewProject() {
       setProgress(35)
 
       const fullConfig = { ...config, pose, background }
+
+      // DIAGNOSTIC — verify config before generation
+      console.log('=== GENERATION CONFIG ===')
+      console.log(JSON.stringify(fullConfig, null, 2))
+
+      // Validate config keys match promptBuilder lookup objects
+      const configErrors = validateConfig(fullConfig)
+      if (configErrors.length > 0) {
+        toast.error('Configuration error: ' + configErrors[0])
+        setGenerating(false)
+        setProgress(0)
+        return
+      }
+
       const garmentDescription = [
         'EXACT GARMENT ATTRIBUTES (DO NOT DEVIATE):',
         `- Front design: ${frontDesign}`,
@@ -109,7 +123,15 @@ export default function NewProject() {
         `- Extra details: ${extraDetails || 'none'}`,
       ].join('\n')
       const { prompt, negative_prompt } = buildPrompt(fullConfig, garmentDescription)
-      const { prompt: baseModelPrompt } = buildBaseModelPrompt(fullConfig)
+      const { prompt: baseModelPrompt, negative_prompt: baseNegativePrompt } = buildBaseModelPrompt(fullConfig)
+
+      console.log('=== BASE MODEL PROMPT ===')
+      console.log(baseModelPrompt)
+      console.log('=== BASE MODEL NEGATIVE PROMPT ===')
+      console.log(baseNegativePrompt)
+      console.log('=== GARMENT PROMPT ===')
+      console.log(prompt)
+
       setProgressMsg(`Building ${imageCount} AI model images...`)
 
       const generatedUrls = []
@@ -119,7 +141,8 @@ export default function NewProject() {
         const url = await generateImage(
           prompt, negative_prompt, uploadedUrls, preservationStrength,
           baseModelPrompt, config.garment_type,
-          (msg) => setProgressMsg(`Image ${i + 1} of ${imageCount} — ${msg}`)
+          (msg) => setProgressMsg(`Image ${i + 1} of ${imageCount} — ${msg}`),
+          baseNegativePrompt
         )
         if (url) generatedUrls.push({ url, prompt })
       }

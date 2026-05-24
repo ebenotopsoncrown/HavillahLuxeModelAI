@@ -137,6 +137,14 @@ function resolveGenderWord(gender, ageGroup) {
 // in the user-selected background wearing a plain white neutral outfit.
 // Deliberately avoids real garment description — FASHN overlays the uploaded garment.
 export function buildBaseModelPrompt(config) {
+  // DIAGNOSTIC — visible in browser console during generation
+  console.log('[buildBaseModelPrompt] CONFIG RECEIVED:', JSON.stringify(config, null, 2))
+  console.log('[buildBaseModelPrompt] BACKGROUND KEY:', config.background, '| MATCH:', !!BACKGROUND_MAP[config.background])
+  console.log('[buildBaseModelPrompt] POSE KEY:', config.pose, '| MATCH:', !!POSE_MAP[config.pose])
+  console.log('[buildBaseModelPrompt] HAIRSTYLE KEY:', config.hairstyle, '| MATCH:', !!HAIRSTYLE_MAP[config.hairstyle])
+  console.log('[buildBaseModelPrompt] GENDER:', config.gender)
+  console.log('[buildBaseModelPrompt] SKIN TONE KEY:', config.skin_tone, '| MATCH:', !!SKIN_TONE_MAP[config.skin_tone])
+
   const {
     gender       = 'female',
     age_range    = '26-35',
@@ -163,31 +171,37 @@ export function buildBaseModelPrompt(config) {
       ? (MAKEUP_MAP[makeup_level] || MAKEUP_MAP.natural)
       : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
 
-  const expression = [
-    'warm bright genuine smile showing perfect teeth',
-    'sparkling happy confident eyes',
-    'radiant joyful cheerful expression',
-    'approachable friendly beautiful look',
-    'confident charismatic magnetic presence',
-    'high fashion supermodel energy',
-  ].join(', ')
+  // Gender enforcement — opposite gender in negative prompt prevents wrong gender being generated
+  const genderNegative = gender === 'female'
+    ? 'man, male, masculine, male body, male face, beard, mustache, male features, masculine features'
+    : 'woman, female, feminine, female body, female face, female features, feminine features'
 
   const prompt = [
     PHOTOGRAPHY + '.',
     `SUBJECT: A breathtakingly beautiful ${ageGroup.desc} African ${genderWord} fashion model.`,
+    `THIS MUST BE A ${genderWord.toUpperCase()}. NOT A ${gender === 'female' ? 'MAN' : 'WOMAN'}.`,
     `SKIN: ${skin}.`,
-    `FACE & EXPRESSION: ${expression}.`,
+    `FACE & EXPRESSION: warm bright genuine smile showing perfect teeth, sparkling happy confident eyes, radiant joyful cheerful expression, approachable friendly beautiful look, confident charismatic magnetic presence, high fashion supermodel energy.`,
     `FIGURE: ${body}.`,
-    `HAIR: ${hair}.`,
+    `HAIR — DO NOT CHANGE — MANDATORY: The model MUST have this EXACT hairstyle: ${hair}. No other hairstyle. This hairstyle is non-negotiable.`,
     `GROOMING: ${grooming}.`,
-    `POSE: ${poseDesc}.`,
-    'OUTFIT: The model is wearing a perfectly fitted plain white seamless bodysuit or white dress, simple and clean with absolutely no details — this is a placeholder outfit only.',
-    `BACKGROUND & SETTING: ${bgDesc}.`,
-    'CRITICAL: Create an entirely new scene. Do NOT copy any background from reference photos.',
+    `POSE — MANDATORY — DO NOT CHANGE: ${poseDesc}. The model MUST be in this exact pose. No other pose is acceptable.`,
+    'OUTFIT: The model is wearing a perfectly fitted plain white seamless bodysuit, simple and clean with absolutely no details — this is a placeholder outfit only.',
+    `BACKGROUND — MANDATORY — GENERATE FROM SCRATCH: ${bgDesc}. This EXACT background MUST be used. Do NOT copy any background from reference photos. Generate this scene completely from scratch.`,
     'MOOD: Joyful, radiant, luxurious, confident.',
   ].join(' ')
 
-  return { prompt, negative_prompt: ageGroup.isChild ? CHILD_NEGATIVE : NEGATIVE_PROMPT }
+  const negative_prompt = [
+    genderNegative,
+    'ugly, unattractive, sad, angry, neutral expression, bored, emotionless',
+    'blurry, low quality, distorted, cartoon, anime, painting, 3D render, illustration, CGI',
+    'watermark, text, logo, extra limbs, wrong anatomy, deformed face, bad hands, extra fingers',
+    'background from garment photo, copied background, original photo setting, same background as reference image',
+    'hallucinated clothing details, added garment features, modified garment',
+    ageGroup.isChild ? 'adult content, revealing clothing, inappropriate, sexual, explicit' : '',
+  ].filter(Boolean).join(', ')
+
+  return { prompt, negative_prompt }
 }
 
 // ── buildPrompt ───────────────────────────────────────────────────────────────
@@ -257,6 +271,36 @@ GARMENT: Reproduce THE EXACT SAME garment from the reference image — every col
 PHOTOGRAPHY: ${PHOTOGRAPHY}.`
 
   return { prompt, negative_prompt }
+}
+
+// ── Config validation — call before generation to catch key mismatches early ──
+export function validateConfig(config) {
+  const issues = []
+
+  if (config.background && !BACKGROUND_MAP[config.background]) {
+    issues.push(`Background key '${config.background}' not found. Available: ${Object.keys(BACKGROUND_MAP).join(', ')}`)
+  }
+  if (config.pose && !POSE_MAP[config.pose]) {
+    issues.push(`Pose key '${config.pose}' not found. Available: ${Object.keys(POSE_MAP).join(', ')}`)
+  }
+  if (config.hairstyle && !HAIRSTYLE_MAP[config.hairstyle]) {
+    issues.push(`Hairstyle key '${config.hairstyle}' not found. Available: ${Object.keys(HAIRSTYLE_MAP).join(', ')}`)
+  }
+  if (config.skin_tone && !SKIN_TONE_MAP[config.skin_tone]) {
+    issues.push(`Skin tone key '${config.skin_tone}' not found. Available: ${Object.keys(SKIN_TONE_MAP).join(', ')}`)
+  }
+  if (config.body_type && !BODY_TYPE_MAP.female[config.body_type]) {
+    issues.push(`Body type key '${config.body_type}' not found. Available: ${Object.keys(BODY_TYPE_MAP.female).join(', ')}`)
+  }
+
+  if (issues.length > 0) {
+    console.error('[validateConfig] CONFIG VALIDATION ERRORS:', issues)
+  } else {
+    console.log('[validateConfig] ✅ Config validation passed — all keys match')
+    console.log('[validateConfig] Full config:', JSON.stringify(config, null, 2))
+  }
+
+  return issues
 }
 
 // ── Named re-exports for backward compatibility ────────────────────────────────
