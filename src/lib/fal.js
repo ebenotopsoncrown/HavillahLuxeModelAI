@@ -1,12 +1,15 @@
 import { supabase } from './supabase'
 
 const FAL_KEY = import.meta.env.VITE_FAL_API_KEY
-const TIMEOUT_MS = 120_000
 
-// Callers can read this after generateImage() to know which engine ran
+if (!FAL_KEY) {
+  console.error('VITE_FAL_API_KEY is not set')
+}
+
+// Callers read this after generateImage() to know which engine ran
 export let lastProvider = 'unknown'
 
-// ── VTO garment category detection ────────────────────────────────────────────
+// ── VTO category detection ─────────────────────────────────────────────────────
 function getVTOCategory(garmentType) {
   const t = (garmentType || '').toLowerCase()
   if (t.includes('trouser') || t.includes('pant') || t.includes('skirt')) return 'bottoms'
@@ -22,55 +25,83 @@ function isLongTop(garmentType) {
   return t.includes('kaftan') || t.includes('abaya')
 }
 
-// ── Poll an async Fal.ai job ──────────────────────────────────────────────────
-async function pollFalJob(requestId, modelPath = 'fal-ai/flux/dev', maxAttempts = 45) {
+// ── Poll async Fal.ai queue job ────────────────────────────────────────────────
+// Uses correct queue.fal.run endpoints (not fal.run which is for sync calls)
+async function pollFalResult(modelPath, requestId, maxAttempts = 40) {
+  console.log(`⏳ Polling ${modelPath} job ${requestId}...`)
+
   for (let i = 0; i < maxAttempts; i++) {
     await new Promise(r => setTimeout(r, 3000))
-    const res = await fetch(
-      `https://fal.run/${modelPath}/requests/${requestId}`,
-      { headers: { Authorization: `Key ${FAL_KEY}` } }
-    )
-    const data = await res.json()
-    if (data.status === 'COMPLETED') {
-      return (
-        data.output?.images?.[0]?.url ||
-        data.output?.image?.url ||
-        data.images?.[0]?.url ||
-        data.image?.url
+
+    try {
+      const statusRes = await fetch(
+        `https://queue.fal.run/${modelPath}/requests/${requestId}/status`,
+        { headers: { Authorization: `Key ${FAL_KEY}` } }
       )
+      const status = await statusRes.json()
+      console.log(`Poll ${i + 1}: ${status.status}`)
+
+      if (status.status === 'COMPLETED') {
+        const resultRes = await fetch(
+          `https://queue.fal.run/${modelPath}/requests/${requestId}`,
+          { headers: { Authorization: `Key ${FAL_KEY}` } }
+        )
+        const result = await resultRes.json()
+        return (
+          result.images?.[0]?.url ||
+          result.output?.images?.[0]?.url ||
+          result.image?.url
+        )
+      }
+
+      if (status.status === 'FAILED') {
+        throw new Error(`Job failed: ${JSON.stringify(status.error || status)}`)
+      }
+    } catch (e) {
+      if (i === maxAttempts - 1) throw e
     }
-    if (data.status === 'FAILED') throw new Error('Fal.ai job failed: ' + (data.error || 'unknown'))
   }
-  throw new Error('Fal.ai job timed out')
+
+  throw new Error('Generation timed out after 2 minutes')
 }
 
-// ── Step 1: Generate a base model person (no specific garment) ────────────────
-// Produces a clean person image that FASHN will dress in the real garment.
+// ── Step 1: Generate base model in selected background ────────────────────────
+// Produces a clean person with plain white outfit in the chosen background.
+// FASHN will then dress this person in the real uploaded garment.
 async function generateBaseModel(prompt, negativePrompt) {
+  console.log('🎨 Step 1: Generating African model...')
+
   const res = await fetch('https://fal.run/fal-ai/flux/dev', {
     method: 'POST',
     headers: { Authorization: `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       prompt,
       negative_prompt: negativePrompt,
-      num_inference_steps: 35,
-      guidance_scale: 7.5,
+      num_inference_steps: 40,
+      guidance_scale: 8.0,
       num_images: 1,
       image_size: 'portrait_4_3',
       enable_safety_checker: false,
+      seed: Math.floor(Math.random() * 1000000),
     }),
   })
-  if (!res.ok) { const err = await res.text(); throw new Error(`Base model gen error: ${err}`) }
+
+  if (!res.ok) { const err = await res.text(); throw new Error(`Model generation failed: ${err}`) }
   const data = await res.json()
-  if (data.images?.[0]?.url) return data.images[0].url
-  if (data.request_id) return await pollFalJob(data.request_id, 'fal-ai/flux/dev')
-  throw new Error('No base model URL in response')
+
+  if (data.images?.[0]?.url) {
+    console.log('✅ Base model generated')
+    return data.images[0].url
+  }
+  if (data.request_id) return await pollFalResult('fal-ai/flux/dev', data.request_id)
+  throw new Error('No image in model generation response')
 }
 
-// ── Step 2: Apply garment via FASHN Virtual Try-On ────────────────────────────
-// FASHN grafts the EXACT garment pixels onto the base model image.
-// restore_background: true keeps the background generated in step 1.
+// ── Step 2: FASHN Virtual Try-On — grafts EXACT garment pixels onto model ─────
+// restore_background: true preserves the background generated in step 1
 async function applyGarmentVTO(modelImageUrl, garmentImageUrl, category, garmentType) {
+  console.log('👗 Step 2: Applying garment via FASHN VTO...')
+
   const res = await fetch('https://fal.run/fal-ai/fashn/tryon', {
     method: 'POST',
     headers: { Authorization: `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
@@ -80,7 +111,7 @@ async function applyGarmentVTO(modelImageUrl, garmentImageUrl, category, garment
       category,
       flat_lay:           false,
       adjust_hands:       true,
-      restore_background: false,
+      restore_background: true,   // keep the generated background from step 1
       restore_clothes:    true,
       long_top:           isLongTop(garmentType),
       mode:               'balanced',
@@ -88,15 +119,20 @@ async function applyGarmentVTO(modelImageUrl, garmentImageUrl, category, garment
       num_samples:        1,
     }),
   })
+
   if (!res.ok) { const err = await res.text(); throw new Error(`FASHN VTO error: ${err}`) }
   const data = await res.json()
-  if (data.images?.[0]?.url) return data.images[0].url
+
+  if (data.images?.[0]?.url) {
+    console.log('✅ Garment applied successfully')
+    return data.images[0].url
+  }
   if (data.image?.url) return data.image.url
-  if (data.request_id) return await pollFalJob(data.request_id, 'fal-ai/fashn/tryon')
+  if (data.request_id) return await pollFalResult('fal-ai/fashn/tryon', data.request_id)
   throw new Error('No VTO image URL in FASHN response')
 }
 
-// ── Fal.ai img2img (fallback if VTO unavailable) ─────────────────────────────
+// ── img2img fallback (VTO non-billing failure) ────────────────────────────────
 async function falImg2Img(prompt, negativePrompt, referenceUrl, strength) {
   const res = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
     method: 'POST',
@@ -117,11 +153,11 @@ async function falImg2Img(prompt, negativePrompt, referenceUrl, strength) {
   const data = await res.json()
   if (data.images?.[0]?.url) return data.images[0].url
   if (data.image?.url) return data.image.url
-  if (data.request_id) return await pollFalJob(data.request_id, 'fal-ai/flux/dev/image-to-image')
+  if (data.request_id) return await pollFalResult('fal-ai/flux/dev/image-to-image', data.request_id)
   throw new Error('No image URL in Fal.ai img2img response')
 }
 
-// ── Fal.ai text-to-image (no reference) ──────────────────────────────────────
+// ── text-to-image (no reference provided) ────────────────────────────────────
 async function falText2Img(prompt, negativePrompt) {
   const res = await fetch('https://fal.run/fal-ai/flux/dev', {
     method: 'POST',
@@ -139,16 +175,16 @@ async function falText2Img(prompt, negativePrompt) {
   if (!res.ok) { const err = await res.text(); throw new Error(`Fal.ai text2img error: ${err}`) }
   const data = await res.json()
   if (data.images?.[0]?.url) return data.images[0].url
-  if (data.request_id) return await pollFalJob(data.request_id, 'fal-ai/flux/dev')
+  if (data.request_id) return await pollFalResult('fal-ai/flux/dev', data.request_id)
   throw new Error('No image URL in Fal.ai text2img response')
 }
 
-// ── Pollinations fallback (text-to-image only) ────────────────────────────────
+// ── Pollinations fallback (billing errors only) ───────────────────────────────
+const TIMEOUT_MS = 120_000
 async function pollinationsText2Img(prompt, seed) {
   const url =
     `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
     `?width=768&height=1024&model=flux&seed=${seed}&nologo=true&enhance=true`
-
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   let res
@@ -161,7 +197,6 @@ async function pollinationsText2Img(prompt, seed) {
   } finally {
     clearTimeout(timer)
   }
-
   if (!res.ok) throw new Error(`Pollinations error: ${res.status}`)
   const blob = await res.blob()
   if (blob.size < 5000) throw new Error('Generated image too small — please try again')
@@ -181,44 +216,44 @@ function isBillingError(msg) {
 async function uploadToStorage(source, seed) {
   const fileName = `gen-${Date.now()}-${seed}.jpg`
   let blob = source
-
   if (typeof source === 'string') {
     const res = await fetch(source)
     if (!res.ok) throw new Error('Failed to download generated image')
     blob = await res.blob()
   }
-
   const { error } = await supabase.storage
     .from('generated-images')
     .upload(fileName, blob, { contentType: 'image/jpeg' })
-
   if (error) throw new Error(`Storage upload failed: ${error.message}`)
   const { data } = supabase.storage.from('generated-images').getPublicUrl(fileName)
   return data.publicUrl
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
-// Primary:  FASHN Virtual Try-On (two-step: generate base model → graft garment)
-// Fallback: Fal.ai img2img (if VTO unavailable or errors)
-// Last:     Pollinations text-to-image (only on billing errors)
+// Primary:  Two-step VTO (generate model in background → FASHN grafts garment)
+// Fallback: Fal.ai img2img (on VTO non-billing failure)
+// Last:     Pollinations text-to-image (billing errors only)
 //
 // Parameters:
-//   prompt            — full garment+model prompt (used by img2img fallback)
+//   prompt            — full garment+model prompt (img2img fallback)
 //   negativePrompt    — shared negative prompt
 //   referenceImageUrls — user's uploaded garment photo URLs
-//   strength          — img2img strength (0.5–0.85); lower = more garment preserved
-//   baseModelPrompt   — person-only prompt for VTO step 1 (no garment description)
-//   garmentType       — e.g. 'Dress', 'Top / Blouse', used to pick VTO category
+//   strength          — img2img strength (0.5–0.85)
+//   baseModelPrompt   — person-only prompt for VTO step 1
+//   garmentType       — e.g. 'Dress', 'Kaftan / Abaya'
+//   onProgress        — optional callback(message) for step reporting
 export async function generateImage(
   prompt,
   negativePrompt,
   referenceImageUrls = [],
-  strength = 0.65,
+  strength = 0.55,
   baseModelPrompt = null,
-  garmentType = ''
+  garmentType = '',
+  onProgress = null,
 ) {
   const seed = Math.floor(Math.random() * 999999)
   const referenceUrl = referenceImageUrls[0] || null
+  const progress = onProgress || (() => {})
 
   if (!FAL_KEY) {
     lastProvider = 'pollinations-fallback'
@@ -226,29 +261,34 @@ export async function generateImage(
     return await uploadToStorage(blob, seed)
   }
 
-  // ── Path 1: VTO — true pixel-perfect garment preservation ──────────────────
+  // ── Path 1: Two-step VTO ──────────────────────────────────────────────────
   if (referenceUrl && baseModelPrompt) {
     try {
+      progress('Step 1 of 2 — Generating your African model...')
       const baseModelUrl = await generateBaseModel(baseModelPrompt, negativePrompt)
+
+      progress('Step 2 of 2 — Applying your exact garment...')
       const category = getVTOCategory(garmentType)
       const vtoUrl = await applyGarmentVTO(baseModelUrl, referenceUrl, category, garmentType)
+
+      progress('Saving image...')
       lastProvider = 'fal-vto'
       return await uploadToStorage(vtoUrl, seed)
     } catch (err) {
       if (isBillingError(err.message || '')) {
         lastProvider = 'pollinations-fallback'
-        toast_noop('Fal.ai balance exhausted')
         const blob = await pollinationsText2Img(prompt, seed)
         return await uploadToStorage(blob, seed)
       }
-      // Non-billing VTO failure — fall through to img2img
       console.warn('VTO unavailable, falling back to img2img:', err.message)
+      progress('VTO unavailable — trying alternative method...')
     }
   }
 
-  // ── Path 2: img2img — garment-lock via reference (VTO fallback) ─────────────
+  // ── Path 2: img2img fallback ──────────────────────────────────────────────
   if (referenceUrl) {
     try {
+      progress('Generating via garment reference...')
       const falUrl = await falImg2Img(prompt, negativePrompt, referenceUrl, strength)
       lastProvider = 'fal-img2img'
       return await uploadToStorage(falUrl, seed)
@@ -260,7 +300,7 @@ export async function generateImage(
     }
   }
 
-  // ── Path 3: text-to-image (no reference provided) ──────────────────────────
+  // ── Path 3: text-to-image (no reference) ─────────────────────────────────
   try {
     const falUrl = await falText2Img(prompt, negativePrompt)
     lastProvider = 'fal-text2img'
@@ -272,7 +312,3 @@ export async function generateImage(
     return await uploadToStorage(blob, seed)
   }
 }
-
-// Placeholder so the billing-error branch inside generateImage compiles without
-// a toast import (callers handle the toast via lastProvider check).
-function toast_noop() {}

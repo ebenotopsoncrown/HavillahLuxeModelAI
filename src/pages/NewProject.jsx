@@ -118,7 +118,8 @@ export default function NewProject() {
         setProgress(35 + ((i / imageCount) * 50))
         const url = await generateImage(
           prompt, negative_prompt, uploadedUrls, preservationStrength,
-          baseModelPrompt, config.garment_type
+          baseModelPrompt, config.garment_type,
+          (msg) => setProgressMsg(`Image ${i + 1} of ${imageCount} — ${msg}`)
         )
         if (url) generatedUrls.push({ url, prompt })
       }

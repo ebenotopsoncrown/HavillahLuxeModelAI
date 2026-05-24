@@ -1,67 +1,82 @@
 // ── Age group map ─────────────────────────────────────────────────────────────
 const AGE_GROUP_MAP = {
-  // Children
   child_4_8:  { desc: '6 year old child',      isChild: true,  isTeen: false, bodyDesc: 'small child frame, petite proportions, young child physique' },
   child_9_12: { desc: '11 year old child',     isChild: true,  isTeen: false, bodyDesc: 'preteen frame, growing child proportions, young physique' },
-  // Teenagers
   teen_13_15: { desc: '14 year old teenager',  isChild: false, isTeen: true,  bodyDesc: null },
   teen_16_17: { desc: '17 year old teenager',  isChild: false, isTeen: true,  bodyDesc: null },
-  // Adults
   '18-25':    { desc: '22 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '26-35':    { desc: '30 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '36-45':    { desc: '40 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '46-55':    { desc: '50 year old',           isChild: false, isTeen: false, bodyDesc: null },
-  // Backward-compatible legacy values
+  // Legacy values
   '30-35':    { desc: '32 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '36-42':    { desc: '39 year old',           isChild: false, isTeen: false, bodyDesc: null },
   '43-50':    { desc: '46 year old',           isChild: false, isTeen: false, bodyDesc: null },
 }
 
-// ── Attribute maps ────────────────────────────────────────────────────────────
-const SKIN_TONE_MAP = {
-  deep_melanin:  'deep melanin dark skin, rich ebony complexion, beautiful dark skin',
-  rich_cocoa:    'rich cocoa brown skin, warm mahogany undertones, gorgeous brown skin',
-  golden_bronze: 'golden bronze skin, warm caramel undertones, radiant bronze complexion',
+// ── Background descriptions (rich, detailed) ──────────────────────────────────
+export const BACKGROUND_MAP = {
+  luxury_palace: 'inside a breathtaking grand royal palace, towering marble pillars with gold leaf detailing, ornate gilded ceiling with crystal chandeliers, rich Persian carpets in deep red and gold, palace archways with intricate carvings, warm golden palace lighting, royal throne room atmosphere, Versailles level opulence and grandeur',
+  modern_mansion: 'inside an ultra modern luxury mansion, soaring floor-to-ceiling glass walls, panoramic city views through windows, minimalist white Italian marble floors, designer contemporary furniture, curated contemporary art on walls, soft diffused natural daylight, Beverly Hills mansion interior, architectural magazine worthy space',
+  yacht_deck: 'on the sun deck of a magnificent superyacht, sparkling turquoise Mediterranean sea stretching to the horizon, gleaming white yacht surfaces, clear blue sky with soft white clouds, warm golden afternoon sun shimmering on the water, distant coastline visible on horizon, luxury yachting lifestyle, Monte Carlo marina setting',
+  studio_minimal: 'professional high-end fashion photography studio, seamless pure white curved backdrop, flawless even studio lighting from all sides, clean crisp white background, Vogue magazine studio setup, perfect controlled lighting environment, fashion week backstage studio quality',
+  desert_royalty: 'majestic African desert landscape at golden hour, dramatic towering sand dunes in warm gold tones, vast open desert stretching to horizon, spectacular orange and purple sunset sky, warm magical golden hour light, ancient timeless Sahara atmosphere, National Geographic quality desert scenery',
+  city_rooftop: 'glamorous rooftop terrace in central London, spectacular panoramic city skyline at dusk, iconic London landmarks visible in background, warm city lights beginning to glow, sleek modern rooftop furniture, urban luxury lifestyle setting, Instagram worthy rooftop atmosphere',
+  tropical_paradise: 'stunning luxury beach resort in the Maldives, crystal clear turquoise lagoon water, pristine white sand beach, elegant overwater bungalows visible in background, swaying palm trees with coconuts, perfect golden hour sunset sky, five star tropical paradise atmosphere',
+  fashion_week: 'Paris Fashion Week venue backstage area, dramatic runway lighting setup, high fashion industry atmosphere, elegant couture fashion show setting, designer brand campaign quality, haute couture Parisian fashion environment',
+  african_village: 'beautiful traditional African village with vibrant colorful surroundings, lush baobab trees in golden afternoon light, rich authentic cultural setting, warm earthy tones, serene natural beauty, handcrafted architecture with detailed patterns',
+  luxury_hotel: 'grand five-star luxury hotel lobby with towering marble columns, opulent crystal chandeliers, gold and ivory decor, lavish high-end interior design, palatial elegance, immaculate white gloved service environment',
+  garden_paradise: 'stunning English country garden in full bloom, lush roses and greenery in every direction, romantic soft natural light filtering through leaves, fairytale garden setting, petals on the breeze, impressionist painting quality natural beauty',
 }
 
+// ── Skin tone descriptions ────────────────────────────────────────────────────
+const SKIN_TONE_MAP = {
+  deep_melanin:  'stunning deep melanin dark skin, rich ebony complexion with beautiful undertones, flawless smooth dark skin that glows, melanin rich beautiful dark complexion',
+  rich_cocoa:    'gorgeous rich cocoa brown skin, warm mahogany undertones, beautiful melanated brown complexion, smooth luminous brown skin',
+  golden_bronze: 'radiant golden bronze skin, warm honey caramel undertones, luminous sun-kissed bronze complexion',
+}
+
+// ── Body type descriptions ────────────────────────────────────────────────────
 const BODY_TYPE_MAP = {
   female: {
-    slim:       'slim elegant model figure',
-    curvy:      'beautiful curvy hourglass figure',
-    athletic:   'toned athletic build',
-    royal_plus: 'full-figured commanding plus-size model',
+    slim:       'tall slim elegant supermodel figure, graceful long legs, model proportions',
+    curvy:      'gorgeous curvy hourglass figure, full hips and bust, beautiful feminine curves',
+    athletic:   'toned athletic feminine figure, defined waist, strong graceful build',
+    royal_plus: 'beautiful full-figured plus-size model, commanding curvaceous presence',
   },
   male: {
-    slim:       'slim lean athletic build',
-    curvy:      'broad shouldered well-built frame',
-    athletic:   'muscular athletic physique',
-    royal_plus: 'large commanding powerful frame',
+    slim:       'tall slim athletic male model, lean and elegant',
+    curvy:      'broad shouldered muscular male model, V-shaped physique',
+    athletic:   'athletic powerful male model, defined muscular build',
+    royal_plus: 'large commanding powerful male figure, strong presence',
   },
 }
 
+// ── Hairstyle descriptions ────────────────────────────────────────────────────
 const HAIRSTYLE_MAP = {
-  afro:           'voluminous natural afro',
-  braided_crown:  'elegant braided crown updo',
-  sleek_bun:      'sleek polished bun',
-  luxury_waves:   'flowing luxury waves',
-  locs:           'beautiful styled locs',
-  cornrows:       'neat geometric cornrows',
-  low_cut:        'clean low cut fade',
-  waves_360:      '360 waves perfectly groomed',
-  caesar_cut:     'sharp caesar cut',
-  dreadlocks_med: 'medium length dreadlocks',
-  bald_fade:      'clean bald head smooth',
-  tapered_fade:   'sharp tapered fade',
-  ponytail:       'neat ponytail',
-  twists:         'styled twists',
+  afro:           'massive stunning natural afro, perfectly shaped, voluminous crown glory',
+  braided_crown:  'intricate gorgeous braided crown updo, artistic braiding, regal headpiece',
+  sleek_bun:      'elegant sleek polished chignon bun, sophisticated refined styling',
+  luxury_waves:   'glossy flowing luxury waves, bouncy full and shiny, supermodel hair',
+  locs:           'beautiful styled locs, natural and regal, artfully arranged',
+  cornrows:       'neat precise cornrows, geometric artistic pattern, sleek styling',
+  low_cut:        'clean sharp low cut fade, crisp edges, fresh professional look',
+  waves_360:      'perfect 360 waves, immaculately groomed, deep wave pattern',
+  caesar_cut:     'sharp neat caesar cut, clean defined edges, classic professional',
+  dreadlocks_med: 'medium styled dreadlocks, natural beauty, artfully kept',
+  bald_fade:      'smooth clean bald head, perfectly polished, strong and beautiful',
+  tapered_fade:   'sharp tapered fade, professionally edged, clean modern look',
+  ponytail:       'neat sleek ponytail, polished and elegant',
+  twists:         'beautiful styled twists, natural texture, artfully arranged',
 }
 
+// ── Makeup / grooming descriptions ───────────────────────────────────────────
 const MAKEUP_MAP = {
-  natural:    'natural glowing minimal makeup',
-  executive:  'polished executive professional makeup',
-  editorial:  'bold high fashion editorial makeup',
-  groomed:    'well groomed natural look',
-  bold_groom: 'bold groomed distinguished look',
+  natural:    'natural dewy glowing skin, minimal makeup with fresh-faced beauty, glossy nude lips, defined natural brows, luminous highlight on cheekbones, long fluttery natural lashes, fresh youthful glow',
+  executive:  'polished flawless professional makeup, defined bold brows, smooth foundation, nude pink lips, subtle contour, professional power beauty look, elegant and put-together',
+  editorial:  'stunning bold editorial makeup, dramatic eye makeup, bold lip color, fierce contour and highlight, high fashion avant-garde beauty, magazine cover makeup artistry',
+  groomed:    'well groomed masculine natural look, clean fresh skin, defined features, natural and handsome appearance',
+  bold_groom: 'bold groomed distinguished masculine look, sharp defined features, strong handsome appearance',
 }
 
 const FACIAL_HAIR_MAP = {
@@ -72,47 +87,35 @@ const FACIAL_HAIR_MAP = {
   mustache:     'sharp mustache',
 }
 
+// ── Pose descriptions ─────────────────────────────────────────────────────────
 export const POSE_MAP = {
-  standing_power: 'standing confidently, hands on hips, power pose',
-  royal_sitting:  'seated in a regal composed elegant pose',
-  runway_walk:    'walking the runway mid-stride, confident',
-  luxury_lounge:  'luxuriously lounging in a relaxed elegant pose',
-  over_shoulder:  'looking over shoulder, three-quarter turn',
+  standing_power: 'standing in a powerful confident pose, hands on hips, shoulders back and proud, chin slightly raised, commanding stance, full body visible from head to toe, Miss World contestant power pose',
+  royal_sitting:  'seated elegantly on a luxury chair or surface, regal upright dignified posture, legs positioned gracefully, hands placed elegantly, queen-like composed regal presence',
+  runway_walk:    'walking confidently like a runway supermodel, mid-stride with purpose and grace, hips swaying naturally, arms moving gently, looking directly at camera with fierce confidence, Paris Fashion Week runway energy',
+  luxury_lounge:  'lounging elegantly in a relaxed sophisticated pose, leaning gracefully, effortless luxury lifestyle energy, casual elegance, relaxed confidence',
+  over_shoulder:  'looking back playfully over shoulder, three-quarter turn showing the garment, coy confident expression, playful yet sophisticated pose, showing both front and side of outfit',
 }
 
-export const BACKGROUND_MAP = {
-  luxury_palace:    'inside a grand opulent palace with ornate gold pillars and arches, marble floors with gold inlay, crystal chandeliers overhead, rich royal red and gold decor, royal throne room atmosphere, dramatic palace lighting',
-  modern_mansion:   'ultra-modern luxury mansion with floor-to-ceiling glass windows, minimalist white and marble interior, expensive contemporary furniture, designer art on walls, soft natural light flooding in, Beverly Hills mansion aesthetic',
-  yacht_deck:       'on the deck of a mega superyacht with crystal blue ocean stretching to the horizon, gleaming white yacht surfaces, Mediterranean sea backdrop, golden hour sunlight shimmering on water, luxury nautical setting',
-  studio_minimal:   'seamless pure white professional photography studio, perfect high-key studio lighting setup, clean minimal white background, fashion photography studio, meticulously lit editorial environment',
-  desert_royalty:   'vast golden African desert landscape with dramatic sand dunes at sunset, deep orange and purple sky, golden hour magical lighting, ancient Sahara atmosphere, cinematic desert scene',
-  city_rooftop:     'luxury rooftop in London city at night with dramatic sparkling city skyline, upscale urban rooftop setting, metropolitan luxury atmosphere, glittering city lights stretching to the horizon',
-  tropical_paradise:'luxury tropical Caribbean beach resort with crystal clear turquoise water, pristine white sand beach, swaying palm trees, golden sunset over the ocean, paradise island setting',
-  fashion_week:     'Paris Fashion Week runway backstage, elegant couture fashion show setting, dramatic editorial lighting, glamorous high fashion atelier atmosphere, Parisian chic',
-  african_village:  'beautiful traditional African village with vibrant colorful surroundings, lush baobab trees, warm golden afternoon light, rich authentic cultural setting, serene natural beauty',
-  luxury_hotel:     'grand 5-star luxury hotel lobby with towering marble columns, opulent crystal chandeliers, gold and ivory decor, lavish high-end interior design, palatial elegance',
-  garden_paradise:  'stunning English country garden in full bloom with lush roses and greenery in every direction, romantic soft natural light filtering through, fairytale garden setting, petals on the breeze',
-}
-
-const QUALITY =
+// ── Shared quality suffix ─────────────────────────────────────────────────────
+const PHOTOGRAPHY =
   'ultra-photorealistic professional fashion photography, ' +
-  'shot on Hasselblad medium format camera, 8K resolution, ' +
-  'razor sharp focus, perfect studio lighting, ' +
-  'magazine editorial quality, Vogue fashion magazine style, ' +
-  'award-winning fashion photography'
+  'shot on Hasselblad H6D-100c medium format camera, 85mm portrait lens, f/2.8 bokeh, ' +
+  'three-point professional lighting setup, perfect rim light separating subject from background, ' +
+  '8K resolution ultra-sharp crisp detail, flawless skin texture, perfect color accuracy, ' +
+  'Vogue Italia editorial quality, award-winning fashion photography, ' +
+  '100% photorealistic human being'
 
+// ── Negative prompt (shared) ──────────────────────────────────────────────────
 export const NEGATIVE_PROMPT =
   'buttons, button front, button down, zipper, zip, zip front, pocket, pockets, ' +
   'collar, shirt collar, lapel, belt, waistband belt, bow, ribbon, ruffles, frills, ' +
   'lace trim, lace overlay, extra embroidery, beading, sequins, added pattern, extra print, ' +
   'extra decoration, modified garment, different garment, wrong clothes, ' +
-  'different clothes, changed garment, modified clothing, added details, extra embellishments, ' +
-  'wrong fabric, wrong pattern, wrong color scheme, different design, altered dress, new outfit, ' +
-  'added buttons, added lines, added dots, added decorations, ' +
   'cartoon, anime, illustration, painting, 3D render, ' +
   'blurry, low quality, distorted, watermark, text, logo, ' +
   'extra limbs, wrong anatomy, deformed face, nudity, ' +
-  'background from original photo, original photo background, same background as reference image'
+  'background from garment photo, original photo background, same background as reference image, ' +
+  'dark background, cluttered background, messy room'
 
 const CHILD_NEGATIVE =
   'adult content, revealing clothing, inappropriate, sexual, explicit, ' +
@@ -125,13 +128,14 @@ function resolveAgeGroup(age_range) {
 
 function resolveGenderWord(gender, ageGroup) {
   if (ageGroup.isChild) return gender === 'male' ? 'boy' : 'girl'
-  if (ageGroup.isTeen) return gender === 'male' ? 'teenage boy' : 'teenage girl'
+  if (ageGroup.isTeen)  return gender === 'male' ? 'teenage boy' : 'teenage girl'
   return gender === 'male' ? 'man' : 'woman'
 }
 
 // ── buildBaseModelPrompt ──────────────────────────────────────────────────────
-// Step 1 of the VTO pipeline: generates a base person image.
-// Deliberately avoids garment description so FASHN can overlay the real garment.
+// Step 1 of the VTO pipeline: generates a beautiful African model person image
+// in the user-selected background wearing a plain white neutral outfit.
+// Deliberately avoids real garment description — FASHN overlays the uploaded garment.
 export function buildBaseModelPrompt(config) {
   const {
     gender       = 'female',
@@ -148,58 +152,46 @@ export function buildBaseModelPrompt(config) {
   const ageGroup   = resolveAgeGroup(age_range)
   const genderWord = resolveGenderWord(gender, ageGroup)
   const skin       = SKIN_TONE_MAP[skin_tone] || SKIN_TONE_MAP.rich_cocoa
-  const body       = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'model figure'
+  const body       = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'elegant model figure'
   const hair       = HAIRSTYLE_MAP[hairstyle] || 'beautiful natural hair'
   const poseDesc   = POSE_MAP[pose] || 'standing confidently'
   const bgDesc     = BACKGROUND_MAP[background] || BACKGROUND_MAP.studio_minimal
 
-  const makeupBeauty = {
-    natural:    'natural dewy glowing skin, fresh and youthful, long lashes, defined brows, glossy lips, radiant highlight',
-    executive:  'polished flawless power beauty look, professional executive makeup, defined features',
-    editorial:  'fierce stunning editorial beauty, bold dramatic high fashion makeup',
-    groomed:    'well groomed natural masculine look',
-    bold_groom: 'bold distinguished groomed look, sharp features',
-  }
-
   const grooming = (ageGroup.isChild || ageGroup.isTeen)
     ? 'natural clean appearance, no makeup'
     : gender === 'female'
-      ? (makeupBeauty[makeup_level] || makeupBeauty.natural)
+      ? (MAKEUP_MAP[makeup_level] || MAKEUP_MAP.natural)
       : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
 
-  const beautyDesc = [
-    'bright warm genuine smile',
-    'sparkling confident eyes',
-    'radiant glowing skin',
-    'magnetic beautiful presence',
-    'cheerful joyful expression',
-    'gorgeous attractive features',
+  const expression = [
+    'warm bright genuine smile showing perfect teeth',
+    'sparkling happy confident eyes',
+    'radiant joyful cheerful expression',
+    'approachable friendly beautiful look',
+    'confident charismatic magnetic presence',
     'high fashion supermodel energy',
-    'confident charismatic presence',
   ].join(', ')
 
   const prompt = [
-    'Professional high fashion editorial photograph.',
-    `Stunning ${ageGroup.desc} African ${genderWord},`,
-    `${skin}, ${body},`,
-    `${hair},`,
-    `${grooming},`,
-    `${poseDesc},`,
-    `${beautyDesc},`,
-    'wearing plain white neutral outfit,',
-    `SETTING: ${bgDesc}.`,
-    'Shot on Hasselblad H6D-100c medium format, 85mm portrait lens, f/2.8 aperture,',
-    'perfect three-point studio lighting with rim light, ultra-sharp focus on face,',
-    '8K resolution, Vogue Italia editorial style, award-winning fashion photography.',
-    'MOOD: Joyful, confident, radiant, luxurious.',
+    PHOTOGRAPHY + '.',
+    `SUBJECT: A breathtakingly beautiful ${ageGroup.desc} African ${genderWord} fashion model.`,
+    `SKIN: ${skin}.`,
+    `FACE & EXPRESSION: ${expression}.`,
+    `FIGURE: ${body}.`,
+    `HAIR: ${hair}.`,
+    `GROOMING: ${grooming}.`,
+    `POSE: ${poseDesc}.`,
+    'OUTFIT: The model is wearing a perfectly fitted plain white seamless bodysuit or white dress, simple and clean with absolutely no details — this is a placeholder outfit only.',
+    `BACKGROUND & SETTING: ${bgDesc}.`,
+    'CRITICAL: Create an entirely new scene. Do NOT copy any background from reference photos.',
+    'MOOD: Joyful, radiant, luxurious, confident.',
   ].join(' ')
 
   return { prompt, negative_prompt: ageGroup.isChild ? CHILD_NEGATIVE : NEGATIVE_PROMPT }
 }
 
 // ── buildPrompt ───────────────────────────────────────────────────────────────
-// Comprehensive garment-preservation prompt for img2img fallback.
-// Pass garment attribute description as customInstructions to prevent AI hallucination.
+// Comprehensive garment-preservation prompt for img2img fallback path.
 export function buildPrompt(config, customInstructions) {
   const {
     gender              = 'female',
@@ -218,179 +210,56 @@ export function buildPrompt(config, customInstructions) {
 
   const ageGroup   = resolveAgeGroup(age_range)
   const genderWord = resolveGenderWord(gender, ageGroup)
-
-  // Inline maps tuned for prompt clarity
-  const skinTones = {
-    deep_melanin:  'deep melanin dark skin, rich ebony complexion',
-    rich_cocoa:    'rich cocoa brown skin, warm mahogany undertones',
-    golden_bronze: 'golden bronze skin, warm caramel undertones',
-  }
-  const bodyTypes = {
-    female: {
-      slim:       'slim elegant model physique',
-      curvy:      'beautiful curvy hourglass figure',
-      athletic:   'toned athletic build',
-      royal_plus: 'full-figured commanding plus-size model',
-    },
-    male: {
-      slim:       'slim lean model build',
-      curvy:      'broad shouldered muscular frame',
-      athletic:   'athletic powerful physique',
-      royal_plus: 'large commanding powerful frame',
-    },
-  }
-  const hairstyles = {
-    afro:           'voluminous natural afro',
-    braided_crown:  'elegant braided crown updo',
-    sleek_bun:      'sleek polished bun',
-    luxury_waves:   'flowing luxury waves',
-    locs:           'beautiful styled locs',
-    cornrows:       'neat cornrows',
-    low_cut:        'clean low cut fade',
-    waves_360:      '360 waves groomed',
-    caesar_cut:     'sharp caesar cut',
-    dreadlocks_med: 'medium dreadlocks',
-    bald_fade:      'clean bald head',
-    tapered_fade:   'sharp tapered fade',
-  }
-  const makeupStyles = {
-    natural:    'natural dewy glowing skin, fresh and youthful, long lashes, defined brows, glossy lips, radiant highlight',
-    executive:  'polished flawless power beauty look, professional executive makeup, defined features',
-    editorial:  'fierce stunning editorial beauty, bold dramatic high fashion makeup',
-    groomed:    'well groomed natural look',
-    bold_groom: 'bold distinguished groomed look',
-  }
-  const poses = {
-    standing_power: 'standing in a powerful confident pose',
-    royal_sitting:  'seated in a regal composed pose',
-    runway_walk:    'walking confidently on runway',
-    luxury_lounge:  'elegantly lounging in relaxed pose',
-    over_shoulder:  'looking over shoulder three-quarter turn',
-  }
-
-  const skin     = skinTones[skin_tone]                                   || 'beautiful brown skin'
-  const body     = ageGroup.bodyDesc || bodyTypes[gender]?.[body_type]    || 'elegant figure'
-  const hair     = hairstyles[hairstyle]                                  || 'natural hair'
-  const grooming = (ageGroup.isChild || ageGroup.isTeen)
+  const skin       = SKIN_TONE_MAP[skin_tone] || SKIN_TONE_MAP.rich_cocoa
+  const body       = ageGroup.bodyDesc || (BODY_TYPE_MAP[gender] || BODY_TYPE_MAP.female)[body_type] || 'elegant figure'
+  const hair       = HAIRSTYLE_MAP[hairstyle] || 'natural hair'
+  const grooming   = (ageGroup.isChild || ageGroup.isTeen)
     ? 'natural clean appearance, no makeup'
     : gender === 'female'
-      ? (makeupStyles[makeup_level] || makeupStyles.natural)
+      ? (MAKEUP_MAP[makeup_level] || MAKEUP_MAP.natural)
       : (FACIAL_HAIR_MAP[facial_hair] || FACIAL_HAIR_MAP.clean_shaven)
-  const poseDesc = poses[pose]                                            || 'standing confidently'
-  const bgDesc   = BACKGROUND_MAP[background]                             || BACKGROUND_MAP.studio_minimal
+  const poseDesc   = POSE_MAP[pose] || 'standing confidently'
+  const bgDesc     = BACKGROUND_MAP[background] || BACKGROUND_MAP.studio_minimal
 
-  // ── ABSOLUTE GARMENT RULES ────────────────────────────────────────────────
-  const absoluteRules = `[ABSOLUTE MANDATORY RULES - NEVER VIOLATE]:
+  const absoluteRules = `[ABSOLUTE MANDATORY RULES]:
+RULE 1: Do NOT add ANY detail to the garment not visible in the reference — no buttons, no zips, no pockets, no belts, no embroidery, no collar, no extra decoration of any kind unless present on the original.
+RULE 2: Do NOT remove any feature visible on the original garment.
+RULE 3: The garment must be a photographic reproduction of the reference — same color, same pattern, same neckline, same sleeves, same length, same front design.
+RULE 4: The background must be the selected setting only — do NOT copy background from the reference garment photo.`
 
-RULE 1 - ZERO ADDITIONS:
-Do NOT add ANY feature, detail, or element to the garment that is not clearly visible in the reference image. This includes:
-- NO buttons unless buttons are on the original
-- NO zips unless zip is on the original
-- NO pockets unless pockets are on the original
-- NO belts unless belt is on the original
-- NO embroidery unless embroidery is on the original
-- NO lace unless lace is on the original
-- NO ruffles unless ruffles are on the original
-- NO collar unless collar is on the original
-- NO sleeves modification
-- NO neckline modification
-- NO length modification
-- NO pattern addition
-- NO print addition
-- NO color addition or change
-- NO texture change
-- NO fabric change
-
-RULE 2 - ZERO REMOVALS:
-Do NOT remove ANY feature visible on the original garment. Every visible element must appear in the output.
-
-RULE 3 - EXACT REPLICATION:
-The garment in the output must be a photographic reproduction of the garment in the reference image. Ask yourself: "If I covered the model and only showed the garment, would it be identical to the reference?" If NO — regenerate until YES.
-
-RULE 4 - SELF VERIFICATION:
-Before finalizing the image, mentally compare:
-- Original garment color vs Output garment color: MATCH?
-- Original front design vs Output front design: MATCH?
-- Original neckline vs Output neckline: MATCH?
-- Original sleeve style vs Output sleeve style: MATCH?
-- Original length vs Output length: MATCH?
-- Original patterns/prints vs Output patterns: MATCH?
-- Original embellishments vs Output embellishments: MATCH?
-- Any extra elements in output not in original? NONE?
-If ANY mismatch — reject.`
-
-  // ── GARMENT ANALYSIS STEP ────────────────────────────────────────────────
-  const garmentAnalysis = `STEP 1 - ANALYZE THE REFERENCE GARMENT:
-Carefully examine every detail of the garment in the reference image:
-- What TYPE of garment is it exactly?
-- What COLOR(S) does it have exactly?
-- What PATTERN or PRINT does it have? (plain/striped/print)
-- What NECKLINE style? (round/v-neck/square/etc)
-- What SLEEVE style? (sleeveless/short/long/etc)
-- What LENGTH? (crop/knee/midi/maxi/floor)
-- What FRONT DESIGN? (plain/button/zip/wrapped/etc)
-- What EMBELLISHMENTS? (none/embroidery/beading/etc)
-- What FABRIC texture? (smooth/textured/shiny/matte)
-
-STEP 2 - LOCK THESE ATTRIBUTES:
-Every attribute identified above is LOCKED. None can be changed, added to, or removed from.`
-
-  // ── CUSTOM / GARMENT ATTRIBUTES ──────────────────────────────────────────
   const customBlock = instructions
-    ? `\n[ADDITIONAL INSTRUCTIONS - HIGH PRIORITY]:\n${instructions}\n`
+    ? `\n[ADDITIONAL INSTRUCTIONS]:\n${instructions}\n`
     : ''
 
-  // ── PHOTOGRAPHY QUALITY ──────────────────────────────────────────────────
-  const quality = [
-    'ultra-photorealistic professional fashion photography',
-    'shot on Phase One IQ4 150MP medium format camera',
-    '8K resolution crisp sharp focus throughout',
-    'perfect professional fashion lighting setup',
-    'Vogue Italia magazine editorial quality',
-    'award winning fashion photography',
-    'flawless skin texture and detail',
-    'perfect color accuracy and reproduction',
-  ].join(', ')
-
-  // ── COMPREHENSIVE NEGATIVE PROMPT ────────────────────────────────────────
   const negative_prompt = [
-    'buttons added', 'buttons not in original', 'zip added', 'pockets added',
-    'belt added', 'collar added', 'different neckline', 'modified neckline',
-    'different sleeves', 'modified sleeves', 'extra embroidery', 'added embellishments',
-    'extra decoration', 'modified pattern', 'different pattern', 'extra print',
-    'different color', 'color change', 'additional design elements', 'modified garment',
-    'different garment', 'wrong clothes', 'altered clothing', 'garment modifications',
-    'extra details on clothing', 'hallucinated garment features',
+    'buttons added', 'zip added', 'pockets added', 'belt added', 'collar added',
+    'different neckline', 'different sleeves', 'extra embroidery', 'added embellishments',
+    'modified pattern', 'different pattern', 'extra print', 'different color', 'color change',
+    'modified garment', 'different garment', 'hallucinated garment features',
+    'background from garment photo', 'background from original photo',
     'cartoon', 'anime', 'illustration', 'painting',
-    'blurry', 'low quality', 'distorted', 'watermark', 'text overlay', 'logo',
+    'blurry', 'low quality', 'distorted', 'watermark', 'text', 'logo',
     'extra limbs', 'wrong anatomy', 'deformed face', 'bad hands',
-    'missing limbs', 'floating objects', 'duplicate', 'artifact', 'noise', 'grain',
-    ...(ageGroup.isChild ? ['adult content', 'revealing clothing', 'inappropriate', 'sexual', 'explicit'] : []),
+    ...(ageGroup.isChild ? ['adult content', 'revealing clothing', 'inappropriate'] : []),
   ].join(', ')
 
-  // ── FINAL PROMPT ─────────────────────────────────────────────────────────
   const prompt = `${absoluteRules}
-
-${garmentAnalysis}
 ${customBlock}
-STEP 3 - GENERATE NEW MODEL IMAGE:
 Create a professional fashion photograph showing:
 
-MODEL: A ${ageGroup.desc} African ${genderWord} with ${skin}, ${body}, ${hair}, ${grooming}, bright warm genuine smile, sparkling confident eyes, radiant glowing skin, magnetic beautiful presence, cheerful joyful expression, gorgeous attractive features, high fashion supermodel energy.
+MODEL: A beautiful ${ageGroup.desc} African ${genderWord} with ${skin}, ${body}, ${hair}, ${grooming}, bright warm genuine smile, sparkling confident eyes, radiant glowing skin, gorgeous attractive features, high fashion supermodel energy.
 
 POSE: ${poseDesc}.
 BACKGROUND: ${bgDesc}.
 
-GARMENT: THE EXACT SAME garment from the reference image — every color, every pattern, every design element preserved with 100% accuracy. No additions, no removals, no modifications whatsoever.
+GARMENT: Reproduce THE EXACT SAME garment from the reference image — every color, every pattern, every design element preserved with 100% accuracy. Zero additions, zero removals, zero modifications.
 
-PHOTOGRAPHY: ${quality}
-
-FINAL CHECK: Before completing, verify the garment in this output is IDENTICAL to the reference image. Any discrepancy = reject and regenerate.`
+PHOTOGRAPHY: ${PHOTOGRAPHY}.`
 
   return { prompt, negative_prompt }
 }
 
-// Named re-exports for any component that imports the maps directly
+// ── Named re-exports for backward compatibility ────────────────────────────────
 export {
   SKIN_TONE_MAP   as SKIN_TONE_BLOCKS,
   BODY_TYPE_MAP   as BODY_TYPE_BLOCKS,
