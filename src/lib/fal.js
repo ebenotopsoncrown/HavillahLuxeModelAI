@@ -133,17 +133,21 @@ async function applyGarmentVTO(modelImageUrl, garmentImageUrl, category, garment
 }
 
 // ── img2img fallback (VTO non-billing failure) ────────────────────────────────
+// Uses Base44-style prompt format: negative_prompt appended to prompt body
 async function falImg2Img(prompt, negativePrompt, referenceUrl, strength) {
+  // Combine prompt + negative like Base44's Core.GenerateImage does
+  const combinedPrompt = `${prompt}\n\nNegative prompt: ${negativePrompt}`
+
   const res = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
     method: 'POST',
     headers: { Authorization: `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      prompt,
+      prompt: combinedPrompt,
       negative_prompt: negativePrompt,
       image_url: referenceUrl,
       strength,
       num_inference_steps: 50,
-      guidance_scale: 12.0,
+      guidance_scale: 10.0,
       num_images: 1,
       image_size: 'portrait_4_3',
       enable_safety_checker: false,

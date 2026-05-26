@@ -14,30 +14,31 @@ const AGE_OPTIONS = [
 ]
 
 const HAIRSTYLE_OPTIONS_FEMALE = [
-  { value: 'afro',         label: 'Natural Afro' },
-  { value: 'braided_crown',label: 'Braided Crown' },
-  { value: 'ponytail',     label: 'Ponytail' },
-  { value: 'cornrows',     label: 'Cornrows' },
-  { value: 'twists',       label: 'Styled Twists' },
-  { value: 'sleek_bun',    label: 'Sleek Bun' },
-  { value: 'luxury_waves', label: 'Luxury Waves' },
-  { value: 'locs',         label: 'Styled Locs' },
+  { value: 'afro',          label: 'Natural Afro' },
+  { value: 'braided_crown', label: 'Braided Crown' },
+  { value: 'cornrows',      label: 'Cornrows' },
+  { value: 'sleek_bun',     label: 'Sleek Bun' },
+  { value: 'luxury_waves',  label: 'Luxury Waves' },
+  { value: 'locs',          label: 'Styled Locs' },
+  { value: 'ponytail',      label: 'Ponytail' },
+  { value: 'twists',        label: 'Styled Twists' },
 ]
 
 const HAIRSTYLE_OPTIONS_MALE = [
   { value: 'low_cut',        label: 'Low Cut / Fade' },
   { value: 'caesar_cut',     label: 'Caesar Cut' },
   { value: 'tapered_fade',   label: 'Tapered Fade' },
+  { value: 'high_top',       label: 'High Top Fade' },
   { value: 'waves_360',      label: '360 Waves' },
-  { value: 'dreadlocks_med', label: 'Medium Dreadlocks' },
+  { value: 'dreadlocks_med', label: 'Styled Locs' },
+  { value: 'cornrows_male',  label: 'Cornrows' },
   { value: 'bald_fade',      label: 'Bald / Clean Shave' },
 ]
 
 const MAKEUP_OPTIONS = [
-  { value: 'natural',   label: 'Natural / Glowing' },
-  { value: 'executive', label: 'Executive / Polished' },
-  { value: 'editorial', label: 'Editorial / Bold' },
-  { value: 'bold_groom',label: 'Bold Groomed' },
+  { value: 'natural',    label: 'Natural / Glowing' },
+  { value: 'executive',  label: 'Executive / Polished' },
+  { value: 'editorial',  label: 'Editorial / Bold' },
 ]
 
 const FACIAL_HAIR_OPTIONS = [
@@ -48,16 +49,64 @@ const FACIAL_HAIR_OPTIONS = [
   { value: 'mustache',     label: 'Mustache' },
 ]
 
-const BODY_TYPE_OPTIONS = [
-  { value: 'slim',       label: 'Slim / Model Physique' },
+const BODY_TYPE_OPTIONS_FEMALE = [
+  { value: 'slim',       label: 'Slim / Statuesque' },
   { value: 'curvy',      label: 'Curvy / Hourglass' },
   { value: 'athletic',   label: 'Athletic / Toned' },
   { value: 'royal_plus', label: 'Royal Plus Size' },
 ]
 
-const GARMENT_TYPES   = ['Dress', 'Top / Blouse', 'Trousers / Pants', 'Skirt', 'Suit / Blazer', 'Jumpsuit', 'Kaftan / Abaya', 'Traditional Wear', 'Jacket / Coat', 'Other']
-const GARMENT_LENGTHS = ['Mini', 'Midi', 'Maxi', 'Knee-length', 'Floor-length', 'Cropped', 'Full-length']
-const GARMENT_FITS    = ['Slim Fit', 'Regular Fit', 'Oversized', 'Fitted / Bodycon', 'Flowy / Relaxed', 'Tailored']
+const BODY_TYPE_OPTIONS_MALE = [
+  { value: 'slim',            label: 'Slim / Lean' },
+  { value: 'athletic_male',   label: 'Athletic' },
+  { value: 'muscular_male',   label: 'Muscular' },
+  { value: 'broad_executive', label: 'Broad Executive' },
+]
+
+const OUTFIT_TYPE_OPTIONS = [
+  { value: 'full_single',     label: 'Full Single Piece' },
+  { value: 'full_outfit',     label: 'Complete Outfit' },
+  { value: 'top_only',        label: 'Top / Blouse Only' },
+  { value: 'trouser_only',    label: 'Trouser Only' },
+  { value: 'bottom_only',     label: 'Bottom / Skirt Only' },
+  { value: 'top_and_trouser', label: 'Top + Trouser (2-Piece)' },
+  { value: 'top_and_bottom',  label: 'Top + Bottom (2-Piece)' },
+  { value: 'agbada_set',      label: 'Agbada Set (3-Piece)' },
+]
+
+const GARMENT_LENGTH_OPTIONS = [
+  { value: '',             label: 'Not specified' },
+  { value: 'crop_short',  label: 'Cropped / Midriff' },
+  { value: 'above_knee',  label: 'Above Knee (Short)' },
+  { value: 'knee_length', label: 'Knee Length' },
+  { value: 'below_knee',  label: 'Below Knee' },
+  { value: 'midi_calf',   label: 'Midi / Calf Length' },
+  { value: 'maxi_floor',  label: 'Maxi / Floor Length' },
+  { value: 'flowing_gown',label: 'Full Gown (Sweeping)' },
+]
+
+const GARMENT_FIT_OPTIONS = [
+  { value: '',              label: 'Not specified' },
+  { value: 'tight_fitted',  label: 'Tight / Bodycon' },
+  { value: 'slim_fit',      label: 'Slim Fit / Tailored' },
+  { value: 'medium_fit',    label: 'Regular / Medium Fit' },
+  { value: 'relaxed_fit',   label: 'Relaxed Fit' },
+  { value: 'loose_flowing', label: 'Loose / Flowing' },
+  { value: 'oversized',     label: 'Oversized' },
+]
+
+const LIGHTING_OPTIONS = [
+  { value: 'soft_studio',        label: 'Soft Studio' },
+  { value: 'golden_hour',        label: 'Golden Hour' },
+  { value: 'dramatic_editorial', label: 'Dramatic Editorial' },
+  { value: 'natural_window',     label: 'Natural Window Light' },
+]
+
+const CAMERA_OPTIONS = [
+  { value: '85mm_portrait',      label: '85mm Portrait' },
+  { value: '50mm_editorial',     label: '50mm Editorial' },
+  { value: '35mm_environmental', label: '35mm Environmental' },
+]
 
 export default function ModelConfigPanel({ config, onChange }) {
   const set = (key, val) => onChange({ ...config, [key]: val })
@@ -65,8 +114,10 @@ export default function ModelConfigPanel({ config, onChange }) {
   const isChild = config.age_range?.startsWith('child_')
   const isTeen  = config.age_range?.startsWith('teen_')
   const isYoung = isChild || isTeen
+  const isMale  = config.gender === 'male'
 
-  const hairstyleOptions = config.gender === 'male' ? HAIRSTYLE_OPTIONS_MALE : HAIRSTYLE_OPTIONS_FEMALE
+  const hairstyleOptions  = isMale ? HAIRSTYLE_OPTIONS_MALE : HAIRSTYLE_OPTIONS_FEMALE
+  const bodyTypeOptions   = isMale ? BODY_TYPE_OPTIONS_MALE : BODY_TYPE_OPTIONS_FEMALE
 
   return (
     <div className="space-y-4">
@@ -83,7 +134,7 @@ export default function ModelConfigPanel({ config, onChange }) {
         </div>
         <div>
           <Label>Age Group</Label>
-          <Select value={config.age_range || '26-35'} onChange={e => set('age_range', e.target.value)}>
+          <Select value={config.age_range || '36-45'} onChange={e => set('age_range', e.target.value)}>
             {AGE_OPTIONS.map(o => (
               <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>
             ))}
@@ -106,7 +157,7 @@ export default function ModelConfigPanel({ config, onChange }) {
         <div>
           <Label>Body Type</Label>
           <Select value={config.body_type || 'slim'} onChange={e => set('body_type', e.target.value)}>
-            {BODY_TYPE_OPTIONS.map(o => (
+            {bodyTypeOptions.map(o => (
               <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>
             ))}
           </Select>
@@ -121,20 +172,31 @@ export default function ModelConfigPanel({ config, onChange }) {
         </Select>
       </div>
 
-      {/* Makeup / facial hair — hidden for children & teens (auto natural) */}
+      {/* Makeup / facial hair — hidden for children & teens */}
       {!isYoung && (
-        config.gender === 'female' ? (
+        isMale ? (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Grooming</Label>
+              <Select value={config.makeup_level || 'groomed'} onChange={e => set('makeup_level', e.target.value)}>
+                <SelectOption value="groomed">Natural / Groomed</SelectOption>
+                <SelectOption value="bold_groom">Bold Groomed</SelectOption>
+                <SelectOption value="executive">Executive</SelectOption>
+                <SelectOption value="editorial">Editorial</SelectOption>
+              </Select>
+            </div>
+            <div>
+              <Label>Facial Hair</Label>
+              <Select value={config.facial_hair || 'clean_shaven'} onChange={e => set('facial_hair', e.target.value)}>
+                {FACIAL_HAIR_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
+              </Select>
+            </div>
+          </div>
+        ) : (
           <div>
             <Label>Makeup Level</Label>
             <Select value={config.makeup_level || 'natural'} onChange={e => set('makeup_level', e.target.value)}>
               {MAKEUP_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
-            </Select>
-          </div>
-        ) : (
-          <div>
-            <Label>Facial Hair</Label>
-            <Select value={config.facial_hair || 'clean_shaven'} onChange={e => set('facial_hair', e.target.value)}>
-              {FACIAL_HAIR_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
             </Select>
           </div>
         )
@@ -146,36 +208,53 @@ export default function ModelConfigPanel({ config, onChange }) {
         </p>
       )}
 
+      {/* Lighting + Camera */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Lighting</Label>
+          <Select value={config.lighting || 'soft_studio'} onChange={e => set('lighting', e.target.value)}>
+            {LIGHTING_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
+          </Select>
+        </div>
+        <div>
+          <Label>Camera Lens</Label>
+          <Select value={config.camera || '85mm_portrait'} onChange={e => set('camera', e.target.value)}>
+            {CAMERA_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
+          </Select>
+        </div>
+      </div>
+
+      {/* Garment Details */}
       <div className="border-t border-[#E8E4DC] pt-3">
         <h3 className="text-sm font-semibold text-[#B8960C] uppercase tracking-wider mb-3">Garment Details</h3>
-        <div className="grid grid-cols-3 gap-3">
+
+        <div className="mb-3">
+          <Label>Outfit Type</Label>
+          <Select value={config.outfit_type || 'full_single'} onChange={e => set('outfit_type', e.target.value)}>
+            {OUTFIT_TYPE_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Type</Label>
-            <Select value={config.garment_type || ''} onChange={e => set('garment_type', e.target.value)}>
-              <SelectOption value="">Select...</SelectOption>
-              {GARMENT_TYPES.map(t => <SelectOption key={t} value={t}>{t}</SelectOption>)}
-            </Select>
-          </div>
-          <div>
-            <Label>Length</Label>
+            <Label>Garment Length</Label>
             <Select value={config.garment_length || ''} onChange={e => set('garment_length', e.target.value)}>
-              <SelectOption value="">Select...</SelectOption>
-              {GARMENT_LENGTHS.map(t => <SelectOption key={t} value={t}>{t}</SelectOption>)}
+              {GARMENT_LENGTH_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
             </Select>
           </div>
           <div>
-            <Label>Fit</Label>
+            <Label>Garment Fit</Label>
             <Select value={config.garment_fit || ''} onChange={e => set('garment_fit', e.target.value)}>
-              <SelectOption value="">Select...</SelectOption>
-              {GARMENT_FITS.map(t => <SelectOption key={t} value={t}>{t}</SelectOption>)}
+              {GARMENT_FIT_OPTIONS.map(o => <SelectOption key={o.value} value={o.value}>{o.label}</SelectOption>)}
             </Select>
           </div>
         </div>
+
         <div className="mt-3">
-          <Label>Outfit Description (optional)</Label>
+          <Label>Garment Description (optional)</Label>
           <Textarea
             rows={2}
-            placeholder="e.g. red floral midi dress with puff sleeves..."
+            placeholder="e.g. red floral ankara midi dress with puff sleeves..."
             value={config.outfit_pieces || ''}
             onChange={e => set('outfit_pieces', e.target.value)}
           />

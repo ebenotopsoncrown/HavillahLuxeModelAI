@@ -34,7 +34,7 @@ const BACKGROUNDS = [
 
 const DEFAULT_CONFIG = {
   gender: 'female',
-  age_range: '26-35',
+  age_range: '36-45',
   skin_tone: 'rich_cocoa',
   body_type: 'slim',
   hairstyle: 'afro',
@@ -43,7 +43,10 @@ const DEFAULT_CONFIG = {
   garment_type: '',
   garment_length: '',
   garment_fit: '',
+  outfit_type: 'full_single',
   outfit_pieces: '',
+  lighting: 'soft_studio',
+  camera: '85mm_portrait',
   custom_instructions: '',
 }
 
